@@ -3,9 +3,9 @@
     <string name="barcode_tv">barcode</string>
     <string name="scan_btn">SCAN</string>
     <string name="bookname_tv">Tytół książki</string>
-    <string-array name="list_books">
+   <!-- <string-array name="list_books">
         <item>Książka1</item>
         <item>Książka2</item>
         <item>Książka3</item>
-    </string-array>
+    </string-array>-->
 </resources>

@@ -8,12 +8,6 @@
     android:orientation="vertical"
     tools:context=".BookDetails">
 
-    <ListView
-        android:id="@+id/book_details"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1" />
-
     <TextView
         android:id="@+id/test_TV1"
         android:layout_width="match_parent"
@@ -23,4 +17,5 @@
         android:id="@+id/test_TV2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
+
 </LinearLayout>

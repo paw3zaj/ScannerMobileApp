@@ -25,11 +25,11 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-//
 
         //Add the listener to the list view
         ListView listView = (ListView) findViewById(R.id.list_books);
 
+        //Create a cursor
         SQLiteOpenHelper databaseHepler = new DatabaseHelper(this);
         try {
             db = databaseHepler.getReadableDatabase();
@@ -54,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> listView, View itemView, int position, long id) {
 
-                //Pass the drink the user clicks on to DrinkActivity
+                //Pass the drink the user clicks on to BookDetails
                 Intent intent = new Intent(MainActivity.this,
                         BookDetails.class);
                 intent.putExtra(BookDetails.EXTRA_BORROWID, (int) id);
