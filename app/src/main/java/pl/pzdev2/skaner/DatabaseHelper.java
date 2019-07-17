@@ -24,6 +24,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         insertBook(db, "Tomcio Paluch", "Dla dzieci");
         insertBook(db, "Stry człowiek i morze", "Dla wszystkich");
         insertBook(db, "O smokach", "Baśnie dla dzieci");
+        insertBook(db, "O 2 takich co ...", "Książka Kornela Makuszyńskiego");
     }
 
     @Override
@@ -31,7 +32,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     }
 
-    private static void insertBook(SQLiteDatabase db, String name,
+    public static void insertBook(SQLiteDatabase db, String name,
                                    String description) {
 
         ContentValues bookValue = new ContentValues();

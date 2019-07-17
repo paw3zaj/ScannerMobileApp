@@ -126,6 +126,8 @@ public class MainActivity extends AppCompatActivity { //} implements View.OnClic
             //wyświetlamy na ekranie aplikacji
             formatTxt.setText("FORMAT: "+scanFormat);
             contentTxt.setText("CONTENT: "+scanContent);
+            //zapisuje w SQLite
+            DatabaseHelper.insertBook(db, scanContent, scanFormat);
         }
         else{
             //złe dane zostały pobrane z ZXing
@@ -135,9 +137,9 @@ public class MainActivity extends AppCompatActivity { //} implements View.OnClic
         }
     }
 
-    @Override
-    public void onPointerCaptureChanged(boolean hasCapture) {
-
-    }
+//    @Override
+//    public void onPointerCaptureChanged(boolean hasCapture) {
+//
+//    }
 
 }
