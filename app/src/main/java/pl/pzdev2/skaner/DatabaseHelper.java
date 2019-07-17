@@ -31,7 +31,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 
     }
-
+    //Metoda 'customer' dodaje rekord do SQLite
     public static void insertBook(SQLiteDatabase db, String name,
                                    String description) {
 
