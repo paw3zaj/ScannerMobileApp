@@ -11,9 +11,25 @@ import android.os.Bundle;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+
+import java.util.HashMap;
+import java.util.Map;
+
 public class BookDetails extends AppCompatActivity {
 
     public static final String EXTRA_BORROWID = "borrowId";
+
+    public static final String URL = "http://153.19.70.138:8080/receive";
+
+    private TextView textViewName;
+//    private TextView description;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,11 +53,11 @@ public class BookDetails extends AppCompatActivity {
                 String nameText = cursor.getString(0);
                 String descriptionText = cursor.getString(1);
 
-                TextView name = (TextView)findViewById(R.id.test_TV1);
-                name.setText(nameText);
+                textViewName = (TextView)findViewById(R.id.test_TV1);
+                textViewName.setText(nameText);
 
-                TextView description = (TextView)findViewById(R.id.test_TV2);
-                description.setText(descriptionText);
+//                description = (TextView)findViewById(R.id.test_TV2);
+//                description.setText(descriptionText);
             }
             cursor.close();
             db.close();
@@ -50,6 +66,32 @@ public class BookDetails extends AppCompatActivity {
             toast.show();
         }
 
+        final TextView description = (TextView)findViewById(R.id.test_TV2);
+
+        final String TAG = textViewName.getText().toString().trim();
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, URL,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        description.setText("poszło do serwera");
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        description.setText("That didn't work!");
+                    }
+                }) {
+
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                Map<String, String> params = new HashMap<>();
+                params.put("barecode", TAG);
+                return params;
+            }
+        };
+
+        MySingleton.getInstance(this).addToRequestQueue(stringRequest);
     }
 
 }
