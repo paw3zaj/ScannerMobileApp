@@ -10,21 +10,37 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class MainActivity extends AppCompatActivity {
+import pl.pzdev2.skaner.kody.IntentIntegrator;
+import pl.pzdev2.skaner.kody.IntentResult;
+
+public class MainActivity extends AppCompatActivity { //} implements View.OnClickListener {
 
     private SQLiteDatabase db;
     private Cursor cursor;
+
+    private Button scanBtn;
+    private TextView formatTxt, contentTxt;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+//        ---------------------------------------------
+        //instantiate UI items
+        scanBtn = (Button)findViewById(R.id.scan_btn);
+        formatTxt = (TextView)findViewById(R.id.barcode_tv);
+        contentTxt = (TextView)findViewById(R.id.bookname_tv);
+
+        //listen for clicks
+//        scanBtn.setOnClickListener(this);
+//        -----------------------------------------------
 
         //Add the listener to the list view
         ListView listView = (ListView) findViewById(R.id.list_books);
@@ -75,4 +91,55 @@ public class MainActivity extends AppCompatActivity {
         cursor.close();
         db.close();
     }
+
+//    --------------------------------------------------------------------------
+
+//    public void onClick(View v){
+//        //Sprawdzanie czy został kliknięty przycisk skanowania
+//        if(v.getId()==R.id.scan_btn){
+//            //instantiate ZXing integration class
+//            IntentIntegrator scanIntegrator = new IntentIntegrator(this);
+//            //start scanning
+//            scanIntegrator.initiateScan();
+//        }
+//    }
+
+    public void onScan(View view) {
+        //Sprawdzanie czy został kliknięty przycisk skanowania
+        if(view.getId()==R.id.scan_btn) {
+            //instantiate ZXing integration class
+            IntentIntegrator scanIntegrator = new IntentIntegrator(this);
+            //start scanning
+            scanIntegrator.initiateScan();
+        }
+    }
+
+    public void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        //pobranie wyniku za pomocą klasy IntentResult
+        IntentResult scanningResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, intent);
+        //sprawdzenie czy mamy poprawny wynik
+        if (scanningResult != null) {
+            //pobieramy wynik skanowania
+            String scanContent = scanningResult.getContents();
+            //pobieramy format kodu skanowania
+            String scanFormat = scanningResult.getFormatName();
+            //wyświetlamy na ekranie aplikacji
+            formatTxt.setText("FORMAT: "+scanFormat);
+            contentTxt.setText("CONTENT: "+scanContent);
+            //zapisuje w SQLite
+            DatabaseHelper.insertBook(db, scanContent, scanFormat);
+        }
+        else{
+            //złe dane zostały pobrane z ZXing
+            Toast toast = Toast.makeText(getApplicationContext(),
+                    "No scan data received!", Toast.LENGTH_SHORT);
+            toast.show();
+        }
+    }
+
+//    @Override
+//    public void onPointerCaptureChanged(boolean hasCapture) {
+//
+//    }
+
 }

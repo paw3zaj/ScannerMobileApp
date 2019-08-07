@@ -33,9 +33,10 @@
 
 
     <Button
-        android:id="@+id/button"
+        android:id="@+id/scan_btn"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:onClick="onScan"
         android:text="@string/scan_btn" />
 
 </LinearLayout>

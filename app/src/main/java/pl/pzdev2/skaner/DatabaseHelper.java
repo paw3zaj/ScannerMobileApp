@@ -24,14 +24,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         insertBook(db, "Tomcio Paluch", "Dla dzieci");
         insertBook(db, "Stry człowiek i morze", "Dla wszystkich");
         insertBook(db, "O smokach", "Baśnie dla dzieci");
+        insertBook(db, "O 2 takich co ...", "Książka Kornela Makuszyńskiego");
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 
     }
-
-    private static void insertBook(SQLiteDatabase db, String name,
+    //Metoda 'customer' dodaje rekord do SQLite
+    public static void insertBook(SQLiteDatabase db, String name,
                                    String description) {
 
         ContentValues bookValue = new ContentValues();
