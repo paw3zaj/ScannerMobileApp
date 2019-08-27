@@ -50,17 +50,17 @@ public class BookDetails extends AppCompatActivity {
         try {
             SQLiteDatabase db = databaseHelper.getReadableDatabase();
             Cursor cursor = db.query("BORROWED",
-                    new String[] {"NAME", "DESCRIPTION"},
+                    new String[] {"BARCODE"},
                     "_id = ?",
                     new String[] {Integer.toString(borrowId)},
                     null, null, null);
 
             if (cursor.moveToFirst()) {
-                String nameText = cursor.getString(0);
-                String descriptionText = cursor.getString(1);
+                String barcodeText = cursor.getString(0);
+//                String descriptionText = cursor.getString(1);
 
                 textViewName = (TextView)findViewById(R.id.test_TV1);
-                textViewName.setText(nameText);
+                textViewName.setText(barcodeText);
 
 //                description = (TextView)findViewById(R.id.test_TV2);
 //                description.setText(descriptionText);
@@ -99,14 +99,7 @@ public class BookDetails extends AppCompatActivity {
                     onBackPressed();
 
                 }
-            }) {
-                @Override
-                public Map<String, String> getHeaders() throws AuthFailureError {
-                    final Map<String, String> headers = new HashMap<>();
-//                    headers.put("Authorization", "Basic " + "c2FnYXJAa2FydHBheS5jb206cnMwM2UxQUp5RnQzNkQ5NDBxbjNmUDgzNVE3STAyNzI=");//put your token here
-                    return headers;
-                }
-            };
+            });
 //            VolleyApplication.getInstance().addToRequestQueue(jsonOblect);
             MySingleton.getInstance(this).addToRequestQueue(jsonObjectRequest);
         } catch (JSONException e) {

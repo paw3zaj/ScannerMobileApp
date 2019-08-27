@@ -8,21 +8,21 @@
     android:orientation="vertical"
     tools:context=".MainActivity">
 
-    <TextView
-        android:id="@+id/bookname_tv"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="@string/bookname_tv"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+    <!--<TextView-->
+        <!--android:id="@+id/bookname_tv"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:hint="@string/bookname_tv"-->
+        <!--app:layout_constraintBottom_toBottomOf="parent"-->
+        <!--app:layout_constraintLeft_toLeftOf="parent"-->
+        <!--app:layout_constraintRight_toRightOf="parent"-->
+        <!--app:layout_constraintTop_toTopOf="parent" />-->
 
-    <TextView
-        android:id="@+id/barcode_tv"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="@string/barcode_tv" />
+    <!--<TextView-->
+        <!--android:id="@+id/barcode_tv"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:hint="@string/barcode_tv" />-->
 
     <ListView
         android:id="@+id/list_books"
@@ -31,6 +31,13 @@
         android:layout_weight="1" />
         <!--android:entries="@array/list_books" />-->
 
+
+    <Button
+        android:id="@+id/send_btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="onSend"
+        android:text="@string/send" />
 
     <Button
         android:id="@+id/scan_btn"
