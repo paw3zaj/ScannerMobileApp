@@ -22,13 +22,18 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.VolleyLog;
+import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.json.JSONStringer;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import pl.pzdev2.skaner.kody.IntentIntegrator;
@@ -41,6 +46,8 @@ public class MainActivity extends AppCompatActivity { //} implements View.OnClic
 
     private Button scanBtn;
     private TextView formatTxt, contentTxt;
+
+    private List<String> barcodeList = new ArrayList<String>();
 
     public static final String URL = "http://153.19.70.138:8080/receive-list";
 
@@ -157,6 +164,8 @@ public class MainActivity extends AppCompatActivity { //} implements View.OnClic
 
     public void onSend(View view) {
 
+
+
         //Sprawdzanie czy został kliknięty przycisk wysyłania
         if (view.getId() == R.id.send_btn) {
 
@@ -168,12 +177,13 @@ public class MainActivity extends AppCompatActivity { //} implements View.OnClic
             if (cursor.moveToFirst()) {
                 do {
                     //calling the method to save the unsynced name to MySQL
-                    sendBarcode(
-                            cursor.getString(cursor.getColumnIndex(String.valueOf(DatabaseHelper.BARCODE)))
-                    );
+                    // sendBarcode(
+//                            cursor.getString(cursor.getColumnIndex(String.valueOf(DatabaseHelper.BARCODE)))
+                        barcodeList.add(cursor.getString(0));
+                        
                 } while (cursor.moveToNext());
 //            sendRequest();!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
+                sendBarcode(barcodeList);
 
             }
             } catch (SQLException e) {
@@ -183,17 +193,19 @@ public class MainActivity extends AppCompatActivity { //} implements View.OnClic
         }
 
     }
-        private void sendBarcode(final String barcode) {
+        private void sendBarcode(final List<String> barcode) {
+
+            this.barcodeList = barcode;
 
             // POST params to be sent to the server
-            Map<String, String> params = new HashMap<String, String>();
-            params.put("barcode", barcode);
+            // Map<String, String> params = new HashMap<String, String>();
+            // params.put("barcode", barcode);
 
             // Define the POST request
-            JsonObjectRequest req = new JsonObjectRequest(URL, new JSONObject(params),
-                    new Response.Listener<JSONObject>() {
+            JsonArrayRequest req = new JsonArrayRequest(Request.Method.POST, URL, new JSONArray(barcode),
+                    new Response.Listener<JSONArray>() {
                         @Override
-                        public void onResponse(JSONObject response) {
+                        public void onResponse(JSONArray response) {
 
                             Toast.makeText(getApplicationContext(), "Dane przesłane na serwer", Toast.LENGTH_LONG).show();
 

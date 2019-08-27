@@ -22,7 +22,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + "_id INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + "BARCODE TEXT);");
         insertBook(db, "14314098432846");
-        insertBook(db, "00034234240000");
+        insertBook(db, "900034234240000");
         insertBook(db, "18888844444444");
     }
 
