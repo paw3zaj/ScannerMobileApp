@@ -30,6 +30,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 
     }
+
     //Metoda 'customer' dodaje rekord do SQLite
     public static void insertBook(SQLiteDatabase db, String barcode) {
 
@@ -38,7 +39,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.insert("BORROWED", null, bookValue);
     }
 
-    public void deleteAll(SQLiteDatabase db) {
+    public static void deleteAll(SQLiteDatabase db) {
         db.execSQL("delete from BARCODE");
     }
 
