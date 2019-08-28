@@ -185,6 +185,8 @@ public class MainActivity extends AppCompatActivity { //} implements View.OnClic
 //            sendRequest();!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                 sendBarcode(barcodeList);
 
+                db.delete("BORROWED",null,null);
+
             }
             } catch (SQLException e) {
                 Toast toast = Toast.makeText(this, "Dane nieosiągalne", Toast.LENGTH_SHORT);

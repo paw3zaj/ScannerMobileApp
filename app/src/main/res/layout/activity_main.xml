@@ -24,12 +24,7 @@
         <!--android:layout_height="wrap_content"-->
         <!--android:hint="@string/barcode_tv" />-->
 
-    <ListView
-        android:id="@+id/list_books"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1" />
-        <!--android:entries="@array/list_books" />-->
+    <!--android:entries="@array/list_books" />-->
 
 
     <Button
@@ -39,10 +34,16 @@
         android:onClick="onSend"
         android:text="@string/send" />
 
+    <ListView
+        android:id="@+id/list_books"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
     <Button
         android:id="@+id/scan_btn"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="70dp"
         android:onClick="onScan"
         android:text="@string/scan_btn" />
 
