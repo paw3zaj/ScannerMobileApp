@@ -34,11 +34,12 @@ public class MainActivity extends AppCompatActivity {
 
     private SQLiteDatabase db;
     private Cursor cursor;
+    private SimpleCursorAdapter listAdapter;
 
     private Button scanBtn;
     private TextView formatTxt, contentTxt;
 
-    private List<String> barcodeList = new ArrayList<String>();
+    private ListView listView;
 
     public static final String URL = "http://153.19.70.138:8080/receive-list";
 
@@ -47,28 +48,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        //Add the listener to the list view
-        ListView listView = (ListView) findViewById(R.id.list_books);
-
-        //Create a cursor
-        SQLiteOpenHelper databaseHepler = new DatabaseHelper(this);
-        try {
-            db = databaseHepler.getReadableDatabase();
-            cursor = db.query("BORROWED",
-                    new String[]{"_id", "BARCODE"},
-                    null, null, null, null, null);
-            SimpleCursorAdapter listAdapter = new SimpleCursorAdapter(this,
-                    android.R.layout.simple_list_item_1,
-                    cursor,
-                    new String[]{"BARCODE"},
-                    new int[]{android.R.id.text1},
-                    0);
-            listView.setAdapter(listAdapter);
-
-        } catch (SQLiteException e) {
-            Toast toast = Toast.makeText(this, "Database unavailable", Toast.LENGTH_SHORT);
-            toast.show();
-        }
+      updateListView();
 
     }
 
@@ -98,24 +78,27 @@ public class MainActivity extends AppCompatActivity {
             String scanContent = scanningResult.getContents();
             //zapisuje w SQLite
             DatabaseHelper.insertBook(db, scanContent); //, scanFormat);
+            updateListView();
         } else {
             //złe dane zostały pobrane z ZXing
             Toast toast = Toast.makeText(getApplicationContext(),
-                    "No scan data received!", Toast.LENGTH_SHORT);
+                    "Błąd skanowania!", Toast.LENGTH_SHORT);
             toast.show();
         }
     }
 
     public void onSend(View view) {
 
+        List<String> barcodeList = new ArrayList<String>();
+
         //Sprawdzanie czy został kliknięty przycisk wysyłania
         if (view.getId() == R.id.send_btn) {
 
             //getting all the barcodes
-            SQLiteOpenHelper databaseHelper = new DatabaseHelper(this);
+//            SQLiteOpenHelper databaseHelper = new DatabaseHelper(this);
             try {
-                SQLiteDatabase db = databaseHelper.getReadableDatabase();
-                Cursor cursor = db.query("BORROWED", new String[]{"BARCODE"}, null, null, null, null, null);
+//                SQLiteDatabase db = databaseHelper.getReadableDatabase();
+                cursor = db.query("BORROWED", new String[]{"BARCODE"}, null, null, null, null, null);
                 if (cursor.moveToFirst()) {
                     do {
                         //calling the method to save the barcodes to MySQL
@@ -135,7 +118,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void sendBarcode(final List<String> barcode) {
 
-        this.barcodeList = barcode;
+//        this.barcodeList = barcode;
 
         // Define the POST request
         JsonArrayRequest req = new JsonArrayRequest(Request.Method.POST, URL, new JSONArray(barcode),
@@ -156,5 +139,31 @@ public class MainActivity extends AppCompatActivity {
 
         // Add the request object to the queue to be executed
         MySingleton.getInstance(this).addToRequestQueue(req);
+    }
+
+    public void updateListView() {
+
+        //Add the listener to the list view
+        listView = (ListView) findViewById(R.id.list_books);
+
+        //Create a cursor
+        SQLiteOpenHelper databaseHepler = new DatabaseHelper(this);
+        try {
+            db = databaseHepler.getReadableDatabase();
+            cursor = db.query("BORROWED",
+                    new String[]{"_id", "BARCODE"},
+                    null, null, null, null, null);
+            listAdapter = new SimpleCursorAdapter(this,
+                    android.R.layout.simple_list_item_1,
+                    cursor,
+                    new String[]{"BARCODE"},
+                    new int[]{android.R.id.text1},
+                    0);
+            listView.setAdapter(listAdapter);
+
+        } catch (SQLiteException e) {
+            Toast toast = Toast.makeText(this, "Database unavailable", Toast.LENGTH_SHORT);
+            toast.show();
+        }
     }
 }
