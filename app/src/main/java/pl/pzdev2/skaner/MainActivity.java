@@ -41,7 +41,7 @@ public class MainActivity extends AppCompatActivity {
 
     private ListView listView;
 
-    public static final String URL = "http://153.19.70.138:8080/receive-list";
+    public static final String URL = "http://153.19.70.138:8080/receive-books-barcode";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,7 +77,9 @@ public class MainActivity extends AppCompatActivity {
             //pobieramy wynik skanowania
             String scanContent = scanningResult.getContents();
             //zapisuje w SQLite
-            DatabaseHelper.insertBook(db, scanContent); //, scanFormat);
+            if (scanContent != null) {
+                DatabaseHelper.insertBook(db, scanContent); //, scanFormat);
+            }
             updateListView();
         } else {
             //złe dane zostały pobrane z ZXing
@@ -98,7 +100,7 @@ public class MainActivity extends AppCompatActivity {
 //            SQLiteOpenHelper databaseHelper = new DatabaseHelper(this);
             try {
 //                SQLiteDatabase db = databaseHelper.getReadableDatabase();
-                cursor = db.query("BORROWED", new String[]{"BARCODE"}, null, null, null, null, null);
+                cursor = db.query("BORROWED", new String[]{"BOOKBARCODE"}, null, null, null, null, null);
                 if (cursor.moveToFirst()) {
                     do {
                         //calling the method to save the barcodes to MySQL
@@ -127,6 +129,7 @@ public class MainActivity extends AppCompatActivity {
                     public void onResponse(JSONArray response) {
 
                         db.delete("BORROWED", null, null);
+                        updateListView();
                         Toast.makeText(getApplicationContext(), "Dane przesłane na serwer", Toast.LENGTH_LONG).show();
 
                     }
@@ -151,12 +154,12 @@ public class MainActivity extends AppCompatActivity {
         try {
             db = databaseHepler.getReadableDatabase();
             cursor = db.query("BORROWED",
-                    new String[]{"_id", "BARCODE"},
+                    new String[]{"_id", "BOOKBARCODE"},
                     null, null, null, null, null);
             listAdapter = new SimpleCursorAdapter(this,
                     android.R.layout.simple_list_item_1,
                     cursor,
-                    new String[]{"BARCODE"},
+                    new String[]{"BOOKBARCODE"},
                     new int[]{android.R.id.text1},
                     0);
             listView.setAdapter(listAdapter);

@@ -20,10 +20,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         db.execSQL("CREATE TABLE BORROWED ("
                 + "_id INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + "BARCODE TEXT);");
-        insertBook(db, "14314098432846");
-        insertBook(db, "88888 0000");
-        insertBook(db, "18888844444444");
+                + "BOOKBARCODE TEXT);");
+        insertBook(db, "pierwszy book Barcode");
+       // insertBook(db, "barc25675");
+        //insertBook(db,"trzeci33");
     }
 
     @Override
@@ -32,18 +32,18 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     //Metoda 'customer' dodaje rekord do SQLite
-    public static void insertBook(SQLiteDatabase db, String barcode) {
+    public static void insertBook(SQLiteDatabase db, String bookBarcode) {
 
         ContentValues bookValue = new ContentValues();
-        bookValue.put("BARCODE", barcode);
+        bookValue.put("BOOKBARCODE", bookBarcode);
         db.insert("BORROWED", null, bookValue);
     }
 
     public static void deleteAll(SQLiteDatabase db) {
-        db.execSQL("delete from BARCODE");
+        db.execSQL("delete from BOOKBARCODE");
     }
 
     public void selectAll(SQLiteDatabase db) {
-        db.execSQL("select * from BARCODE");
+        db.execSQL("select * from BOOKBARCODE");
     }
 }
