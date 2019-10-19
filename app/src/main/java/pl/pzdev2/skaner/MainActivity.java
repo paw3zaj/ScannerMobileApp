@@ -23,9 +23,12 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
 
 import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import pl.pzdev2.skaner.kody.IntentIntegrator;
 import pl.pzdev2.skaner.kody.IntentResult;
@@ -41,7 +44,8 @@ public class MainActivity extends AppCompatActivity {
 
     private ListView listView;
 
-    public static final String URL = "http://153.19.70.138:8080/receive-books-barcode";
+//    public static final String URL = "http://153.19.70.138:8080/receive-books-barcode";
+public static final String URL = "http://192.168.0.109:8080/receive-books-barcode";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -128,9 +132,17 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onResponse(JSONArray response) {
 
-                        db.delete("BORROWED", null, null);
+//                        db.delete("BORROWED", null, null);
+
+                        try {
+                            deleteBarcodeFromVirtua(response);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
                         updateListView();
-                        Toast.makeText(getApplicationContext(), "Dane przesłane na serwer", Toast.LENGTH_LONG).show();
+
+                            Toast.makeText(getApplicationContext(), "Dane przesłane na serwer", Toast.LENGTH_LONG).show();
+
 
                     }
                 }, new Response.ErrorListener() {
@@ -142,6 +154,18 @@ public class MainActivity extends AppCompatActivity {
 
         // Add the request object to the queue to be executed
         MySingleton.getInstance(this).addToRequestQueue(req);
+    }
+
+    public void deleteBarcodeFromVirtua(JSONArray res) throws JSONException {
+
+        for (int i = 0; i < res.length(); i++) {
+            JSONObject jsonObject = res.getJSONObject(i);
+            String bookBarcode = jsonObject.getString("bookBarcode");
+
+            db.delete("BORROWED",
+                "BOOKBARCODE = ?",
+                new String[] {bookBarcode});
+        }
     }
 
     public void updateListView() {
