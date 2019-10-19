@@ -22,8 +22,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + "_id INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + "BOOKBARCODE TEXT);");
         insertBook(db, "pierwszy book Barcode");
-       // insertBook(db, "barc25675");
-        //insertBook(db,"trzeci33");
+        insertBook(db, "11111111");
+        insertBook(db,"zostaje");
     }
 
     @Override
@@ -40,10 +40,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     public static void deleteAll(SQLiteDatabase db) {
-        db.execSQL("delete from BOOKBARCODE");
+        db.execSQL("delete from BORROWED");
     }
 
     public void selectAll(SQLiteDatabase db) {
-        db.execSQL("select * from BOOKBARCODE");
+        db.execSQL("select * from BORROWED");
     }
 }
