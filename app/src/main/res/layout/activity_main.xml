@@ -18,6 +18,17 @@
         android:text="@string/send"
         android:textStyle="italic" />
 
+    <Button
+        android:id="@+id/cleanup_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:layout_margin="5dp"
+        android:background="@android:color/holo_red_dark"
+        android:onClick="onCleanup"
+        android:text="@string/cleanup"
+        android:textStyle="italic" />
+
     <ListView
         android:id="@+id/list_books"
         android:layout_width="match_parent"

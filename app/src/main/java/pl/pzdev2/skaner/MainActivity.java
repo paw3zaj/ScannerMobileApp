@@ -44,8 +44,8 @@ public class MainActivity extends AppCompatActivity {
 
     private ListView listView;
 
-//    public static final String URL = "http://153.19.70.138:8080/receive-books-barcode";
-public static final String URL = "http://192.168.0.109:8080/receive-books-barcode";
+    public static final String URL = "http://153.19.70.138:8080/receive-books-barcode";
+//public static final String URL = "http://192.168.0.109:8080/receive-books-barcode";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -104,7 +104,7 @@ public static final String URL = "http://192.168.0.109:8080/receive-books-barcod
 //            SQLiteOpenHelper databaseHelper = new DatabaseHelper(this);
             try {
 //                SQLiteDatabase db = databaseHelper.getReadableDatabase();
-                cursor = db.query("BORROWED", new String[]{"BOOKBARCODE"}, null, null, null, null, null);
+                cursor = db.query("BORROWED", new String[]{"BARCODE"}, null, null, null, null, null);
                 if (cursor.moveToFirst()) {
                     do {
                         //calling the method to save the barcodes to MySQL
@@ -122,12 +122,12 @@ public static final String URL = "http://192.168.0.109:8080/receive-books-barcod
         }
     }
 
-    private void sendBarcode(final List<String> barcode) {
+    private void sendBarcode(final List<String> barCode) {
 
 //        this.barcodeList = barcode;
 
         // Define the POST request
-        JsonArrayRequest req = new JsonArrayRequest(Request.Method.POST, URL, new JSONArray(barcode),
+        JsonArrayRequest req = new JsonArrayRequest(Request.Method.POST, URL, new JSONArray(barCode),
                 new Response.Listener<JSONArray>() {
                     @Override
                     public void onResponse(JSONArray response) {
@@ -160,11 +160,11 @@ public static final String URL = "http://192.168.0.109:8080/receive-books-barcod
 
         for (int i = 0; i < res.length(); i++) {
             JSONObject jsonObject = res.getJSONObject(i);
-            String bookBarcode = jsonObject.getString("bookBarcode");
+            String barcode = jsonObject.getString("barCode");
 
             db.delete("BORROWED",
-                "BOOKBARCODE = ?",
-                new String[] {bookBarcode});
+                "BARCODE = ?",
+                new String[] {barcode});
         }
     }
 
@@ -178,12 +178,12 @@ public static final String URL = "http://192.168.0.109:8080/receive-books-barcod
         try {
             db = databaseHepler.getReadableDatabase();
             cursor = db.query("BORROWED",
-                    new String[]{"_id", "BOOKBARCODE"},
+                    new String[]{"_id", "BARCODE"},
                     null, null, null, null, null);
             listAdapter = new SimpleCursorAdapter(this,
                     android.R.layout.simple_list_item_1,
                     cursor,
-                    new String[]{"BOOKBARCODE"},
+                    new String[]{"BARCODE"},
                     new int[]{android.R.id.text1},
                     0);
             listView.setAdapter(listAdapter);
@@ -192,5 +192,13 @@ public static final String URL = "http://192.168.0.109:8080/receive-books-barcod
             Toast toast = Toast.makeText(this, "Database unavailable", Toast.LENGTH_SHORT);
             toast.show();
         }
+    }
+
+    public void onCleanup(View view) {
+
+        DatabaseHelper.deleteAll(db);
+
+        Toast toast = Toast.makeText(this, "Kody kreskowe usunięte", Toast.LENGTH_SHORT);
+        toast.show();
     }
 }
