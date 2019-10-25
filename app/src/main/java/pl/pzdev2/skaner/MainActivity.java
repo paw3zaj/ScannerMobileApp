@@ -197,6 +197,7 @@ public class MainActivity extends AppCompatActivity {
     public void onCleanup(View view) {
 
         DatabaseHelper.deleteAll(db);
+        updateListView();
 
         Toast toast = Toast.makeText(this, "Kody kreskowe usunięte", Toast.LENGTH_SHORT);
         toast.show();

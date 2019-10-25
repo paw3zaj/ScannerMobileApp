@@ -24,7 +24,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         insertBook(db,"33333");
         insertBook(db,"1111");
         insertBook(db,"22222");
-        insertBook(db,"33333");
+        insertBook(db,"3333");
     }
 
     @Override
