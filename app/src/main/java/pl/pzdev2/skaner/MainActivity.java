@@ -33,7 +33,7 @@ import java.util.Map;
 import pl.pzdev2.skaner.kody.IntentIntegrator;
 import pl.pzdev2.skaner.kody.IntentResult;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private SQLiteDatabase db;
     private Cursor cursor;
@@ -52,6 +52,13 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        Button sendButton = (Button) findViewById(R.id.send_btn);
+        sendButton.setOnClickListener(this);
+        Button cleanUpButton = (Button) findViewById(R.id.cleanup_btn);
+        cleanUpButton.setOnClickListener(this);
+        Button scanButton = (Button) findViewById(R.id.scan_btn);
+        scanButton.setOnClickListener(this);
+
       updateListView();
 
     }
@@ -63,14 +70,12 @@ public class MainActivity extends AppCompatActivity {
         db.close();
     }
 
-    public void onScan(View view) {
-        //Sprawdzanie czy został kliknięty przycisk skanowania
-        if (view.getId() == R.id.scan_btn) {
+    private void onScan() {
+
             //instantiate ZXing integration class
             IntentIntegrator scanIntegrator = new IntentIntegrator(this);
             //start scanning
             scanIntegrator.initiateScan();
-        }
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
@@ -93,15 +98,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void onSend(View view) {
+    private void onSend() {
 
         List<String> barcodeList = new ArrayList<String>();
 
-        //Sprawdzanie czy został kliknięty przycisk wysyłania
-        if (view.getId() == R.id.send_btn) {
-
-            //getting all the barcodes
-//            SQLiteOpenHelper databaseHelper = new DatabaseHelper(this);
             try {
 //                SQLiteDatabase db = databaseHelper.getReadableDatabase();
                 cursor = db.query("BORROWED", new String[]{"BARCODE"}, null, null, null, null, null);
@@ -113,13 +113,11 @@ public class MainActivity extends AppCompatActivity {
                     } while (cursor.moveToNext());
                     sendBarcode(barcodeList);
 
-//                    db.delete("BORROWED", null, null);
                 }
             } catch (SQLException e) {
                 Toast toast = Toast.makeText(this, "Dane nieosiągalne", Toast.LENGTH_SHORT);
                 toast.show();
             }
-        }
     }
 
     private void sendBarcode(final List<String> barCode) {
@@ -194,12 +192,28 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void onCleanup(View view) {
+    private void onCleanup() {
 
         DatabaseHelper.deleteAll(db);
         updateListView();
 
         Toast toast = Toast.makeText(this, "Kody kreskowe usunięte", Toast.LENGTH_SHORT);
         toast.show();
+    }
+
+    @Override
+    public void onClick(View v) {
+//Sprawdzanie czy został kliknięty przycisk skanowania
+        switch (v.getId()) {
+            case R.id.send_btn:
+                onSend();
+                break;
+            case R.id.cleanup_btn:
+                onCleanup();
+                break;
+            case  R.id.scan_btn:
+                onScan();
+                break;
+        }
     }
 }

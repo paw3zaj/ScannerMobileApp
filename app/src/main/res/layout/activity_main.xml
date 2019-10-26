@@ -5,22 +5,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MainActivity">
-<!--<android.support.constraint.ConstraintLayout-->
-<!--    xmlns:android="http://schemas.android.com/apk/res/android"-->
-<!--    xmlns:app="http://schemas.android.com/apk/res-auto"-->
-<!--    xmlns:tools="http://schemas.android.com/tools"-->
-<!--    android:layout_width="match_parent"-->
-<!--    android:layout_height="match_parent"-->
-<!--    tools:context=".MainActivity">-->
-
-<!--    xmlns:app="http://schemas.android.com/apk/res-auto"-->
-<!--<LinearLayout-->
-<!--    xmlns:android="http://schemas.android.com/apk/res/android"-->
-<!--    xmlns:tools="http://schemas.android.com/tools"-->
-<!--    android:layout_width="match_parent"-->
-<!--    android:layout_height="match_parent"-->
-<!--    android:orientation="vertical"-->
-<!--    tools:context=".MainActivity">-->
 
     <Button
         android:id="@+id/send_btn"
@@ -30,7 +14,6 @@
         android:layout_margin="5dp"
         android:layout_marginTop="4dp"
         android:background="@android:color/holo_green_light"
-        android:onClick="onSend"
         android:text="@string/send"
         android:textStyle="italic"
         app:layout_constraintEnd_toEndOf="parent"
@@ -44,7 +27,6 @@
         android:layout_margin="5dp"
         android:layout_marginTop="4dp"
         android:background="@android:color/holo_red_dark"
-        android:onClick="onCleanup"
         android:text="@string/cleanup"
         android:textStyle="italic"
         app:layout_constraintStart_toStartOf="parent"
@@ -65,7 +47,6 @@
         android:layout_width="match_parent"
         android:layout_height="70dp"
         android:background="@android:color/darker_gray"
-        android:onClick="onScan"
         android:text="@string/scan_btn"
         android:textSize="24sp"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -73,5 +54,3 @@
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
-<!--</android.support.constraint.ConstraintLayout>-->
-<!--</LinearLayout>-->
