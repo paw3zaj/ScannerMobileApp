@@ -5,4 +5,8 @@
     <string name="bookname_tv">Tytół książki</string>
     <string name="send">Wyślij</string>
     <string name="cleanup">Usuń kody</string>
+    <string name="dialog_title">Usuń kody</string>
+    <string name="dialog_message">Czy chcesz usunąć wszystkie kody kreskowe z telefonu?</string>
+    <string name="ok">Tak</string>
+    <string name="cancel">NIE</string>
 </resources>

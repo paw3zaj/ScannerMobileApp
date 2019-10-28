@@ -2,6 +2,8 @@ package pl.pzdev2.skaner;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.SQLException;
@@ -10,7 +12,6 @@ import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
@@ -28,7 +29,6 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import pl.pzdev2.skaner.kody.IntentIntegrator;
 import pl.pzdev2.skaner.kody.IntentResult;
@@ -44,7 +44,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private ListView listView;
 
-    public static final String URL = "http://153.19.70.138:8080/receive-books-barcode";
+    public static final String URL = "http://153.19.70.138:7323/receive-books-barcode";
 //public static final String URL = "http://192.168.0.109:8080/receive-books-barcode";
 
     @Override
@@ -122,8 +122,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void sendBarcode(final List<String> barCode) {
 
-//        this.barcodeList = barcode;
-
         // Define the POST request
         JsonArrayRequest req = new JsonArrayRequest(Request.Method.POST, URL, new JSONArray(barCode),
                 new Response.Listener<JSONArray>() {
@@ -133,14 +131,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //                        db.delete("BORROWED", null, null);
 
                         try {
-                            deleteBarcodeFromVirtua(response);
+                            deleteBarcodeVirtua(response);
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
                         updateListView();
 
                             Toast.makeText(getApplicationContext(), "Dane przesłane na serwer", Toast.LENGTH_LONG).show();
-
 
                     }
                 }, new Response.ErrorListener() {
@@ -154,7 +151,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         MySingleton.getInstance(this).addToRequestQueue(req);
     }
 
-    public void deleteBarcodeFromVirtua(JSONArray res) throws JSONException {
+    public void deleteBarcodeVirtua(JSONArray res) throws JSONException {
 
         for (int i = 0; i < res.length(); i++) {
             JSONObject jsonObject = res.getJSONObject(i);
@@ -193,6 +190,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void onCleanup() {
+
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.dialog_title)
+                .setMessage(R.string.dialog_message)
+                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                       deleteListBarcodes();
+                    }
+                })
+                .setNegativeButton(R.string.cancel, null)
+                .show();
+    }
+
+    private void deleteListBarcodes() {
 
         DatabaseHelper.deleteAll(db);
         updateListView();
