@@ -9,7 +9,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DB_NAME = "statistics";
     private static final int DB_VERSION = 1;
-    public static final String BARCODE = "barcode";
+    public static final String BARCODE = "barCode";
 
     public DatabaseHelper(Context context) {
         super(context, DB_NAME, null, DB_VERSION);
@@ -20,10 +20,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         db.execSQL("CREATE TABLE BORROWED ("
                 + "_id INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + "BOOKBARCODE TEXT);");
-        insertBook(db, "pierwszy book Barcode");
-       // insertBook(db, "barc25675");
-        //insertBook(db,"trzeci33");
+                + "BARCODE TEXT);");
+        insertBook(db,"33333");
+        insertBook(db,"1111");
+        insertBook(db,"22222");
+        insertBook(db,"3333");
     }
 
     @Override
@@ -32,18 +33,18 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     //Metoda 'customer' dodaje rekord do SQLite
-    public static void insertBook(SQLiteDatabase db, String bookBarcode) {
+    public static void insertBook(SQLiteDatabase db, String barCode) {
 
         ContentValues bookValue = new ContentValues();
-        bookValue.put("BOOKBARCODE", bookBarcode);
+        bookValue.put("BARCODE", barCode);
         db.insert("BORROWED", null, bookValue);
     }
 
     public static void deleteAll(SQLiteDatabase db) {
-        db.execSQL("delete from BOOKBARCODE");
+        db.execSQL("delete from BORROWED");
     }
 
     public void selectAll(SQLiteDatabase db) {
-        db.execSQL("select * from BOOKBARCODE");
+        db.execSQL("select * from BORROWED");
     }
 }

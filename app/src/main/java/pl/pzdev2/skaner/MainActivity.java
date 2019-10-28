@@ -2,6 +2,8 @@ package pl.pzdev2.skaner;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.SQLException;
@@ -10,7 +12,6 @@ import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
@@ -23,6 +24,8 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
 
 import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +33,7 @@ import java.util.List;
 import pl.pzdev2.skaner.kody.IntentIntegrator;
 import pl.pzdev2.skaner.kody.IntentResult;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private SQLiteDatabase db;
     private Cursor cursor;
@@ -41,12 +44,20 @@ public class MainActivity extends AppCompatActivity {
 
     private ListView listView;
 
-    public static final String URL = "http://153.19.70.138:8080/receive-books-barcode";
+    public static final String URL = "http://153.19.70.138:7323/receive-books-barcode";
+//public static final String URL = "http://192.168.0.109:8080/receive-books-barcode";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        Button sendButton = (Button) findViewById(R.id.send_btn);
+        sendButton.setOnClickListener(this);
+        Button cleanUpButton = (Button) findViewById(R.id.cleanup_btn);
+        cleanUpButton.setOnClickListener(this);
+        Button scanButton = (Button) findViewById(R.id.scan_btn);
+        scanButton.setOnClickListener(this);
 
       updateListView();
 
@@ -59,14 +70,12 @@ public class MainActivity extends AppCompatActivity {
         db.close();
     }
 
-    public void onScan(View view) {
-        //Sprawdzanie czy został kliknięty przycisk skanowania
-        if (view.getId() == R.id.scan_btn) {
+    private void onScan() {
+
             //instantiate ZXing integration class
             IntentIntegrator scanIntegrator = new IntentIntegrator(this);
             //start scanning
             scanIntegrator.initiateScan();
-        }
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
@@ -89,18 +98,13 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void onSend(View view) {
+    private void onSend() {
 
         List<String> barcodeList = new ArrayList<String>();
 
-        //Sprawdzanie czy został kliknięty przycisk wysyłania
-        if (view.getId() == R.id.send_btn) {
-
-            //getting all the barcodes
-//            SQLiteOpenHelper databaseHelper = new DatabaseHelper(this);
             try {
 //                SQLiteDatabase db = databaseHelper.getReadableDatabase();
-                cursor = db.query("BORROWED", new String[]{"BOOKBARCODE"}, null, null, null, null, null);
+                cursor = db.query("BORROWED", new String[]{"BARCODE"}, null, null, null, null, null);
                 if (cursor.moveToFirst()) {
                     do {
                         //calling the method to save the barcodes to MySQL
@@ -109,28 +113,31 @@ public class MainActivity extends AppCompatActivity {
                     } while (cursor.moveToNext());
                     sendBarcode(barcodeList);
 
-//                    db.delete("BORROWED", null, null);
                 }
             } catch (SQLException e) {
                 Toast toast = Toast.makeText(this, "Dane nieosiągalne", Toast.LENGTH_SHORT);
                 toast.show();
             }
-        }
     }
 
-    private void sendBarcode(final List<String> barcode) {
-
-//        this.barcodeList = barcode;
+    private void sendBarcode(final List<String> barCode) {
 
         // Define the POST request
-        JsonArrayRequest req = new JsonArrayRequest(Request.Method.POST, URL, new JSONArray(barcode),
+        JsonArrayRequest req = new JsonArrayRequest(Request.Method.POST, URL, new JSONArray(barCode),
                 new Response.Listener<JSONArray>() {
                     @Override
                     public void onResponse(JSONArray response) {
 
-                        db.delete("BORROWED", null, null);
+//                        db.delete("BORROWED", null, null);
+
+                        try {
+                            deleteBarcodeVirtua(response);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
                         updateListView();
-                        Toast.makeText(getApplicationContext(), "Dane przesłane na serwer", Toast.LENGTH_LONG).show();
+
+                            Toast.makeText(getApplicationContext(), "Dane przesłane na serwer", Toast.LENGTH_LONG).show();
 
                     }
                 }, new Response.ErrorListener() {
@@ -144,6 +151,18 @@ public class MainActivity extends AppCompatActivity {
         MySingleton.getInstance(this).addToRequestQueue(req);
     }
 
+    public void deleteBarcodeVirtua(JSONArray res) throws JSONException {
+
+        for (int i = 0; i < res.length(); i++) {
+            JSONObject jsonObject = res.getJSONObject(i);
+            String barcode = jsonObject.getString("barCode");
+
+            db.delete("BORROWED",
+                "BARCODE = ?",
+                new String[] {barcode});
+        }
+    }
+
     public void updateListView() {
 
         //Add the listener to the list view
@@ -154,12 +173,12 @@ public class MainActivity extends AppCompatActivity {
         try {
             db = databaseHepler.getReadableDatabase();
             cursor = db.query("BORROWED",
-                    new String[]{"_id", "BOOKBARCODE"},
+                    new String[]{"_id", "BARCODE"},
                     null, null, null, null, null);
             listAdapter = new SimpleCursorAdapter(this,
                     android.R.layout.simple_list_item_1,
                     cursor,
-                    new String[]{"BOOKBARCODE"},
+                    new String[]{"BARCODE"},
                     new int[]{android.R.id.text1},
                     0);
             listView.setAdapter(listAdapter);
@@ -167,6 +186,46 @@ public class MainActivity extends AppCompatActivity {
         } catch (SQLiteException e) {
             Toast toast = Toast.makeText(this, "Database unavailable", Toast.LENGTH_SHORT);
             toast.show();
+        }
+    }
+
+    private void onCleanup() {
+
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.dialog_title)
+                .setMessage(R.string.dialog_message)
+                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                       deleteListBarcodes();
+                    }
+                })
+                .setNegativeButton(R.string.cancel, null)
+                .show();
+    }
+
+    private void deleteListBarcodes() {
+
+        DatabaseHelper.deleteAll(db);
+        updateListView();
+
+        Toast toast = Toast.makeText(this, "Kody kreskowe usunięte", Toast.LENGTH_SHORT);
+        toast.show();
+    }
+
+    @Override
+    public void onClick(View v) {
+//Sprawdzanie czy został kliknięty przycisk skanowania
+        switch (v.getId()) {
+            case R.id.send_btn:
+                onSend();
+                break;
+            case R.id.cleanup_btn:
+                onCleanup();
+                break;
+            case  R.id.scan_btn:
+                onScan();
+                break;
         }
     }
 }
