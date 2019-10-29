@@ -21,10 +21,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("CREATE TABLE BORROWED ("
                 + "_id INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + "BARCODE TEXT);");
-        insertBook(db,"33333");
-        insertBook(db,"1111");
-        insertBook(db,"22222");
-        insertBook(db,"3333");
+//        insertBook(db,"33333");
+//        insertBook(db,"1111");
+//        insertBook(db,"22222");
+//        insertBook(db,"3333");
     }
 
     @Override

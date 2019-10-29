@@ -39,9 +39,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Cursor cursor;
     private SimpleCursorAdapter listAdapter;
 
-    private Button scanBtn;
-    private TextView formatTxt, contentTxt;
-
     private ListView listView;
 
     public static final String URL = "http://153.19.70.138:7323/receive-books-barcode";
@@ -59,7 +56,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Button scanButton = (Button) findViewById(R.id.scan_btn);
         scanButton.setOnClickListener(this);
 
-      updateListView();
+        updateListView();
 
     }
 
@@ -72,10 +69,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void onScan() {
 
-            //instantiate ZXing integration class
-            IntentIntegrator scanIntegrator = new IntentIntegrator(this);
-            //start scanning
-            scanIntegrator.initiateScan();
+        //instantiate ZXing integration class
+        IntentIntegrator scanIntegrator = new IntentIntegrator(this);
+        //start scanning
+        scanIntegrator.initiateScan();
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
@@ -102,22 +99,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         List<String> barcodeList = new ArrayList<String>();
 
-            try {
+        try {
 //                SQLiteDatabase db = databaseHelper.getReadableDatabase();
-                cursor = db.query("BORROWED", new String[]{"BARCODE"}, null, null, null, null, null);
-                if (cursor.moveToFirst()) {
-                    do {
-                        //calling the method to save the barcodes to MySQL
-                        barcodeList.add(cursor.getString(0));
+            cursor = db.query("BORROWED", new String[]{"BARCODE"}, null, null, null, null, null);
+            if (cursor.moveToFirst()) {
+                do {
+                    //calling the method to save the barcodes to MySQL
+                    barcodeList.add(cursor.getString(0));
 
-                    } while (cursor.moveToNext());
-                    sendBarcode(barcodeList);
+                } while (cursor.moveToNext());
+                sendBarcode(barcodeList);
 
-                }
-            } catch (SQLException e) {
-                Toast toast = Toast.makeText(this, "Dane nieosiągalne", Toast.LENGTH_SHORT);
-                toast.show();
             }
+        } catch (SQLException e) {
+            Toast toast = Toast.makeText(this, "Dane nieosiągalne", Toast.LENGTH_SHORT);
+            toast.show();
+        }
     }
 
     private void sendBarcode(final List<String> barCode) {
@@ -137,7 +134,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         }
                         updateListView();
 
-                            Toast.makeText(getApplicationContext(), "Dane przesłane na serwer", Toast.LENGTH_LONG).show();
+                        Toast.makeText(getApplicationContext(), "Dane przesłane na serwer", Toast.LENGTH_LONG).show();
 
                     }
                 }, new Response.ErrorListener() {
@@ -158,8 +155,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             String barcode = jsonObject.getString("barCode");
 
             db.delete("BORROWED",
-                "BARCODE = ?",
-                new String[] {barcode});
+                    "BARCODE = ?",
+                    new String[]{barcode});
         }
     }
 
@@ -182,6 +179,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     new int[]{android.R.id.text1},
                     0);
             listView.setAdapter(listAdapter);
+//            listAdapter.isEmpty();
 
         } catch (SQLiteException e) {
             Toast toast = Toast.makeText(this, "Database unavailable", Toast.LENGTH_SHORT);
@@ -190,18 +188,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void onCleanup() {
-
-        new AlertDialog.Builder(this)
-                .setTitle(R.string.dialog_title)
-                .setMessage(R.string.dialog_message)
-                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                       deleteListBarcodes();
-                    }
-                })
-                .setNegativeButton(R.string.cancel, null)
-                .show();
+        if (cursor.getCount() != 0) {
+            new AlertDialog.Builder(this)
+                    .setTitle(R.string.dialog_title)
+                    .setMessage(R.string.dialog_message)
+                    .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            deleteListBarcodes();
+                        }
+                    })
+                    .setNegativeButton(R.string.cancel, null)
+                    .show();
+        }
     }
 
     private void deleteListBarcodes() {
@@ -223,7 +222,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.cleanup_btn:
                 onCleanup();
                 break;
-            case  R.id.scan_btn:
+            case R.id.scan_btn:
                 onScan();
                 break;
         }
