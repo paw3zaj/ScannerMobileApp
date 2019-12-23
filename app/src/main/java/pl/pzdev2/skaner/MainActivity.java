@@ -41,7 +41,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private ListView listView;
 
-    public static final String URL = "http://153.19.70.138:7323/receive-books-barcode";
+    public static final String URL = "http://153.19.70.197:7323/receive-books-barcode";
 //public static final String URL = "http://192.168.0.109:8080/receive-books-barcode";
 
     @Override
