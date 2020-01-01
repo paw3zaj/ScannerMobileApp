@@ -1,5 +1,6 @@
 package pl.pzdev2.skaner;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.AlertDialog;
@@ -42,6 +43,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private ListView listView;
 
     public static final String URL = "http://153.19.70.197:7323/receive-books-barcode";
+    private int requestCode;
+    private int resultCode;
+    @Nullable
+    private Intent intent;
 //public static final String URL = "http://192.168.0.109:8080/receive-books-barcode";
 
     @Override
@@ -75,8 +80,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         scanIntegrator.initiateScan();
     }
 
-    public void onActivityResult(int requestCode, int resultCode, Intent intent) {
-        //pobranie wyniku za pomocą klasy IntentResult
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent intent) {
+        super.onActivityResult(requestCode, resultCode, intent);
+        this.requestCode = requestCode;
+        this.resultCode = resultCode;
+        this.intent = intent;
+
+//        pobranie wyniku za pomocą klasy IntentResult
         IntentResult scanningResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, intent);
         //sprawdzenie czy mamy poprawny wynik
         if (scanningResult != null) {
