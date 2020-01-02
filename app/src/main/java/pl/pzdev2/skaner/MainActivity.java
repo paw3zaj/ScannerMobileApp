@@ -42,12 +42,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private ListView listView;
 
-    public static final String URL = "http://153.19.70.197:7323/receive-books-barcode";
+    //PRODUCTION IP
+//    public static final String URL = "http://153.19.70.197:7323/receive-books-barcode";
     private int requestCode;
     private int resultCode;
-    @Nullable
+//    @Nullable
     private Intent intent;
-//public static final String URL = "http://192.168.0.109:8080/receive-books-barcode";
+    //DEVELOPER IP
+    public static final String URL = "http://192.168.0.109:8080/receive-books-barcode";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,7 +83,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent intent) {
+    protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
         super.onActivityResult(requestCode, resultCode, intent);
         this.requestCode = requestCode;
         this.resultCode = resultCode;
