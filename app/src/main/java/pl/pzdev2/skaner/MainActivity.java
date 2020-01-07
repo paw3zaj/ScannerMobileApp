@@ -2,16 +2,22 @@ package pl.pzdev2.skaner;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Bundle;
+import android.util.SparseArray;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ListView;
@@ -23,22 +29,34 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
+import com.google.android.gms.vision.CameraSource;
+import com.google.android.gms.vision.Detector;
+import com.google.android.gms.vision.barcode.Barcode;
+import com.google.android.gms.vision.barcode.BarcodeDetector;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import pl.pzdev2.skaner.kody.IntentIntegrator;
 import pl.pzdev2.skaner.kody.IntentResult;
 
+import static java.lang.Thread.sleep;
+
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private SQLiteDatabase db;
     private Cursor cursor;
     private SimpleCursorAdapter listAdapter;
+
+    SurfaceView surfaceView;
+    private BarcodeDetector barcodeDetector;
+    private CameraSource cameraSource;
+    private static final int REQUEST_CAMERA_PERMISSION = 201;
 
     private ListView listView;
 
@@ -49,7 +67,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //    @Nullable
     private Intent intent;
     //DEVELOPER IP
-    public static final String URL = "http://192.168.0.109:8080/receive-books-barcode";
+    public static final String URL = "http://153.19.70.138:8080/receive-books-barcode";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,12 +76,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         Button sendButton = (Button) findViewById(R.id.send_btn);
         sendButton.setOnClickListener(this);
-        Button cleanUpButton = (Button) findViewById(R.id.cleanup_btn);
-        cleanUpButton.setOnClickListener(this);
-        Button scanButton = (Button) findViewById(R.id.scan_btn);
-        scanButton.setOnClickListener(this);
+
+        listView = (ListView) findViewById(R.id.list_books);
+
+        surfaceView = findViewById(R.id.barcode_sv);
 
         updateListView();
+
+        scanBarcode();
+
+//        updateListView();
 
     }
 
@@ -110,24 +132,29 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void onSend() {
 
-        List<String> barcodeList = new ArrayList<String>();
+        updateListView();
+        Toast toast = Toast.makeText(this, "Test Wysyłania", Toast.LENGTH_SHORT);
+        toast.show();
 
-        try {
-//                SQLiteDatabase db = databaseHelper.getReadableDatabase();
-            cursor = db.query("BORROWED", new String[]{"BARCODE"}, null, null, null, null, null);
-            if (cursor.moveToFirst()) {
-                do {
-                    //calling the method to save the barcodes to MySQL
-                    barcodeList.add(cursor.getString(0));
 
-                } while (cursor.moveToNext());
-                sendBarcode(barcodeList);
-
-            }
-        } catch (SQLException e) {
-            Toast toast = Toast.makeText(this, "Dane nieosiągalne", Toast.LENGTH_SHORT);
-            toast.show();
-        }
+//        List<String> barcodeList = new ArrayList<String>();
+//
+//        try {
+////                SQLiteDatabase db = databaseHelper.getReadableDatabase();
+//            cursor = db.query("BORROWED", new String[]{"BARCODE"}, null, null, null, null, null);
+//            if (cursor.moveToFirst()) {
+//                do {
+//                    //calling the method to save the barcodes to MySQL
+//                    barcodeList.add(cursor.getString(0));
+//
+//                } while (cursor.moveToNext());
+//                sendBarcode(barcodeList);
+//
+//            }
+//        } catch (SQLException e) {
+//            Toast toast = Toast.makeText(this, "Dane nieosiągalne", Toast.LENGTH_SHORT);
+//            toast.show();
+//        }
     }
 
     private void sendBarcode(final List<String> barCode) {
@@ -176,7 +203,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void updateListView() {
 
         //Add the listener to the list view
-        listView = (ListView) findViewById(R.id.list_books);
+//        listView = (ListView) findViewById(R.id.list_books);
 
         //Create a cursor
         SQLiteOpenHelper databaseHepler = new DatabaseHelper(this);
@@ -225,18 +252,81 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         toast.show();
     }
 
+    private void scanBarcode() {
+
+//        txtBarcodeValue = findViewById(R.id.tv_barcode);
+
+
+        barcodeDetector = new BarcodeDetector.Builder(getApplicationContext())
+                .setBarcodeFormats(Barcode.ALL_FORMATS)
+                .build();
+
+        cameraSource = new CameraSource.Builder(this, barcodeDetector)
+                .setRequestedPreviewSize(1920, 1080)
+                .setAutoFocusEnabled(true)
+                .build();
+
+        surfaceView.getHolder().addCallback(new SurfaceHolder.Callback() {
+            @Override
+            public void surfaceCreated(SurfaceHolder holder) {
+                try{
+                    if(ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+                        cameraSource.start(surfaceView.getHolder());
+                    } else {
+                        ActivityCompat.requestPermissions(MainActivity.this, new
+                                String[]{Manifest.permission.CAMERA}, REQUEST_CAMERA_PERMISSION);
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+
+            }
+
+            @Override
+            public void surfaceDestroyed(SurfaceHolder holder) {
+                cameraSource.stop();
+            }
+        });
+
+        barcodeDetector.setProcessor(new Detector.Processor<Barcode>() {
+            @Override
+            public void release() {
+                Toast.makeText(getApplicationContext(), "To prevent memory leaks barcode scanner has been stopped", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void receiveDetections(Detector.Detections<Barcode> detections) {
+
+                final SparseArray<Barcode> barcodes = detections.getDetectedItems();
+                if(barcodes.size() != 0) {
+
+                    listView.post(new Runnable() {
+                        @Override
+                        public void run() {
+
+                            Barcode thisCode = barcodes.valueAt(0);
+                            DatabaseHelper.insertBook(db, thisCode.rawValue);
+
+                            Toast.makeText(getApplicationContext(), thisCode.rawValue, Toast.LENGTH_SHORT)
+                                    .show();
+
+                        }
+                    });
+                }
+            }
+        });
+    }
+
     @Override
     public void onClick(View v) {
 //Sprawdzanie czy został kliknięty przycisk skanowania
         switch (v.getId()) {
             case R.id.send_btn:
                 onSend();
-                break;
-            case R.id.cleanup_btn:
-                onCleanup();
-                break;
-            case R.id.scan_btn:
-                onScan();
                 break;
         }
     }
