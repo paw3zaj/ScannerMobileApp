@@ -295,7 +295,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         barcodeDetector.setProcessor(new Detector.Processor<Barcode>() {
             @Override
             public void release() {
-                Toast.makeText(getApplicationContext(), "To prevent memory leaks barcode scanner has been stopped", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), "Aby zapobiec wyciekowi pamięci, skaner kodów kreskowych został zatrzymany", Toast.LENGTH_SHORT).show();
             }
 
             @Override
@@ -309,10 +309,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         public void run() {
 
                             Barcode thisCode = barcodes.valueAt(0);
-                            DatabaseHelper.insertBook(db, thisCode.rawValue);
-
-                            Toast.makeText(getApplicationContext(), thisCode.rawValue, Toast.LENGTH_SHORT)
-                                    .show();
+                            if(thisCode != null) {
+                                DatabaseHelper.insertBook(db, thisCode.rawValue);
+                            }
+                            updateListView();
+//
+//                            Toast.makeText(getApplicationContext(), thisCode.rawValue, Toast.LENGTH_SHORT)
+//                                    .show();
 
                         }
                     });
@@ -323,7 +326,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View v) {
-//Sprawdzanie czy został kliknięty przycisk skanowania
+//Sprawdzanie czy został kliknięty przycisk
         switch (v.getId()) {
             case R.id.send_btn:
                 onSend();
