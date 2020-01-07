@@ -84,7 +84,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         updateListView();
 
         scanBarcode();
-
+        //
 //        updateListView();
 
     }
@@ -254,11 +254,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void scanBarcode() {
 
-//        txtBarcodeValue = findViewById(R.id.tv_barcode);
-
-
         barcodeDetector = new BarcodeDetector.Builder(getApplicationContext())
-                .setBarcodeFormats(Barcode.ALL_FORMATS)
+                .setBarcodeFormats(Barcode.CODE_39 | Barcode.EAN_13)
                 .build();
 
         cameraSource = new CameraSource.Builder(this, barcodeDetector)
