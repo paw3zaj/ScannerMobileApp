@@ -40,7 +40,9 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import pl.pzdev2.skaner.kody.IntentIntegrator;
 import pl.pzdev2.skaner.kody.IntentResult;
@@ -57,6 +59,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private BarcodeDetector barcodeDetector;
     private CameraSource cameraSource;
     private static final int REQUEST_CAMERA_PERMISSION = 201;
+
+    private List<String> barcodesList = new ArrayList<>();
 
     private ListView listView;
 
@@ -299,6 +303,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void receiveDetections(Detector.Detections<Barcode> detections) {
 
                 final SparseArray<Barcode> barcodes = detections.getDetectedItems();
+//                final List<String> barcodesList = new ArrayList<>();
+
                 if(barcodes.size() != 0) {
 
                     listView.post(new Runnable() {
@@ -306,12 +312,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         public void run() {
 
                             Barcode thisCode = barcodes.valueAt(0);
-                            if(thisCode != null) {
-                                DatabaseHelper.insertBook(db, thisCode.rawValue);
+                            String barcode = thisCode.rawValue;
+
+                            if(!barcodesList.contains(barcode)) {
+                                barcodesList.add(barcode);
+                                DatabaseHelper.insertBook(db, barcode);
                             }
                             updateListView();
 //
-//                            Toast.makeText(getApplicationContext(), thisCode.rawValue, Toast.LENGTH_SHORT)
+//                            Toast.makeText(getApplicationContext(), "size: " + barcodes.size(), Toast.LENGTH_SHORT)
 //                                    .show();
 
                         }
