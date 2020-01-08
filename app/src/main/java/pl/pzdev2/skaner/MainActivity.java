@@ -83,7 +83,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         listView = (ListView) findViewById(R.id.list_books);
 
-        surfaceView = findViewById(R.id.barcode_sv);
+        surfaceView = (SurfaceView) findViewById(R.id.barcode_sv);
 
         updateListView();
 
@@ -215,7 +215,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             db = databaseHepler.getReadableDatabase();
             cursor = db.query("BORROWED",
                     new String[]{"_id", "BARCODE"},
-                    null, null, null, null, null);
+                    null, null, null, null, "_id DESC");
             listAdapter = new SimpleCursorAdapter(this,
                     android.R.layout.simple_list_item_1,
                     cursor,
