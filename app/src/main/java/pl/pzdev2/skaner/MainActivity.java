@@ -1,62 +1,84 @@
 package pl.pzdev2.skaner;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Bundle;
+import android.util.SparseArray;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
+import com.google.android.gms.vision.CameraSource;
+import com.google.android.gms.vision.Detector;
+import com.google.android.gms.vision.barcode.Barcode;
+import com.google.android.gms.vision.barcode.BarcodeDetector;
 
 import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-import pl.pzdev2.skaner.kody.IntentIntegrator;
-import pl.pzdev2.skaner.kody.IntentResult;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private SQLiteDatabase db;
     private Cursor cursor;
+    private SQLiteOpenHelper databaseHelper;
     private SimpleCursorAdapter listAdapter;
+
+
+    private SurfaceView surfaceView;
+    private BarcodeDetector barcodeDetector;
+    private CameraSource cameraSource;
+    private static final int REQUEST_CAMERA_PERMISSION = 201;
+
+    private List<String> barcodesList;
 
     private ListView listView;
 
-    public static final String URL = "http://153.19.70.197:7323/receive-books-barcode";
-//public static final String URL = "http://192.168.0.109:8080/receive-books-barcode";
+    //PRODUCTION IP
+//    public static final String URL = "http://153.19.70.197:7323/receive-books-barcode";
+    //DEVELOPER IP
+    public static final String URL = "http://153.19.70.138:8080/receive-books-barcode";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
+        barcodesList = new ArrayList<>();
+        databaseHelper = new DatabaseHelper(this);
+
         Button sendButton = (Button) findViewById(R.id.send_btn);
         sendButton.setOnClickListener(this);
-        Button cleanUpButton = (Button) findViewById(R.id.cleanup_btn);
-        cleanUpButton.setOnClickListener(this);
-        Button scanButton = (Button) findViewById(R.id.scan_btn);
-        scanButton.setOnClickListener(this);
+
+        listView = (ListView) findViewById(R.id.list_books);
+
+        surfaceView = (SurfaceView) findViewById(R.id.barcode_sv);
 
         updateListView();
+
+        scanBarcode();
 
     }
 
@@ -65,34 +87,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onDestroy();
         cursor.close();
         db.close();
-    }
-
-    private void onScan() {
-
-        //instantiate ZXing integration class
-        IntentIntegrator scanIntegrator = new IntentIntegrator(this);
-        //start scanning
-        scanIntegrator.initiateScan();
-    }
-
-    public void onActivityResult(int requestCode, int resultCode, Intent intent) {
-        //pobranie wyniku za pomocą klasy IntentResult
-        IntentResult scanningResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, intent);
-        //sprawdzenie czy mamy poprawny wynik
-        if (scanningResult != null) {
-            //pobieramy wynik skanowania
-            String scanContent = scanningResult.getContents();
-            //zapisuje w SQLite
-            if (scanContent != null) {
-                DatabaseHelper.insertBook(db, scanContent); //, scanFormat);
-            }
-            updateListView();
-        } else {
-            //złe dane zostały pobrane z ZXing
-            Toast toast = Toast.makeText(getApplicationContext(),
-                    "Błąd skanowania!", Toast.LENGTH_SHORT);
-            toast.show();
-        }
     }
 
     private void onSend() {
@@ -125,13 +119,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     @Override
                     public void onResponse(JSONArray response) {
 
-//                        db.delete("BORROWED", null, null);
+                        DatabaseHelper.deleteAll(db);
 
-                        try {
-                            deleteBarcodeVirtua(response);
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
                         updateListView();
 
                         Toast.makeText(getApplicationContext(), "Dane przesłane na serwer", Toast.LENGTH_LONG).show();
@@ -148,30 +137,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         MySingleton.getInstance(this).addToRequestQueue(req);
     }
 
-    public void deleteBarcodeVirtua(JSONArray res) throws JSONException {
-
-        for (int i = 0; i < res.length(); i++) {
-            JSONObject jsonObject = res.getJSONObject(i);
-            String barcode = jsonObject.getString("barCode");
-
-            db.delete("BORROWED",
-                    "BARCODE = ?",
-                    new String[]{barcode});
-        }
-    }
-
     public void updateListView() {
 
-        //Add the listener to the list view
-        listView = (ListView) findViewById(R.id.list_books);
-
         //Create a cursor
-        SQLiteOpenHelper databaseHepler = new DatabaseHelper(this);
+//        SQLiteOpenHelper databaseHelper = new DatabaseHelper(this);
         try {
-            db = databaseHepler.getReadableDatabase();
+            db = databaseHelper.getReadableDatabase();
             cursor = db.query("BORROWED",
                     new String[]{"_id", "BARCODE"},
-                    null, null, null, null, null);
+                    null, null, null, null, "_id DESC");
             listAdapter = new SimpleCursorAdapter(this,
                     android.R.layout.simple_list_item_1,
                     cursor,
@@ -182,48 +156,86 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //            listAdapter.isEmpty();
 
         } catch (SQLiteException e) {
-            Toast toast = Toast.makeText(this, "Database unavailable", Toast.LENGTH_SHORT);
+            Toast toast = Toast.makeText(this, "Baza danych SQLite niedostępna", Toast.LENGTH_SHORT);
             toast.show();
         }
     }
 
-    private void onCleanup() {
-        if (cursor.getCount() != 0) {
-            new AlertDialog.Builder(this)
-                    .setTitle(R.string.dialog_title)
-                    .setMessage(R.string.dialog_message)
-                    .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+    private void scanBarcode() {
+
+        barcodeDetector = new BarcodeDetector.Builder(getApplicationContext())
+                .setBarcodeFormats(Barcode.CODE_39 | Barcode.EAN_13)
+                .build();
+
+        cameraSource = new CameraSource.Builder(this, barcodeDetector)
+                .setRequestedPreviewSize(1920, 1080)
+                .setAutoFocusEnabled(true)
+                .build();
+
+        surfaceView.getHolder().addCallback(new SurfaceHolder.Callback() {
+            @Override
+            public void surfaceCreated(SurfaceHolder holder) {
+                try{
+                    if(ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+                        cameraSource.start(surfaceView.getHolder());
+                    } else {
+                        ActivityCompat.requestPermissions(MainActivity.this, new
+                                String[]{Manifest.permission.CAMERA}, REQUEST_CAMERA_PERMISSION);
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+
+            }
+
+            @Override
+            public void surfaceDestroyed(SurfaceHolder holder) {
+                cameraSource.stop();
+            }
+        });
+
+        barcodeDetector.setProcessor(new Detector.Processor<Barcode>() {
+            @Override
+            public void release() {
+                Toast.makeText(getApplicationContext(), "Aby zapobiec wyciekowi pamięci, skaner kodów kreskowych został zatrzymany", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void receiveDetections(Detector.Detections<Barcode> detections) {
+
+                final SparseArray<Barcode> barcodes = detections.getDetectedItems();
+
+                if(barcodes.size() != 0) {
+
+                    listView.post(new Runnable() {
                         @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            deleteListBarcodes();
+                        public void run() {
+
+                            Barcode thisCode = barcodes.valueAt(0);
+                            String barcode = thisCode.rawValue;
+
+                            if(!barcodesList.contains(barcode)) {
+                                barcodesList.add(barcode);
+                                DatabaseHelper.insertBook(db, barcode);
+                            }
+                            updateListView();
                         }
-                    })
-                    .setNegativeButton(R.string.cancel, null)
-                    .show();
-        }
-    }
-
-    private void deleteListBarcodes() {
-
-        DatabaseHelper.deleteAll(db);
-        updateListView();
-
-        Toast toast = Toast.makeText(this, "Kody kreskowe usunięte", Toast.LENGTH_SHORT);
-        toast.show();
+                    });
+                }
+            }
+        });
     }
 
     @Override
     public void onClick(View v) {
-//Sprawdzanie czy został kliknięty przycisk skanowania
+//Sprawdzanie czy został kliknięty przycisk
         switch (v.getId()) {
             case R.id.send_btn:
                 onSend();
-                break;
-            case R.id.cleanup_btn:
-                onCleanup();
-                break;
-            case R.id.scan_btn:
-                onScan();
                 break;
         }
     }
