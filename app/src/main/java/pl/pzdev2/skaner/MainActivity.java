@@ -41,14 +41,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private SQLiteDatabase db;
     private Cursor cursor;
+    private SQLiteOpenHelper databaseHelper;
     private SimpleCursorAdapter listAdapter;
 
-    SurfaceView surfaceView;
+
+    private SurfaceView surfaceView;
     private BarcodeDetector barcodeDetector;
     private CameraSource cameraSource;
     private static final int REQUEST_CAMERA_PERMISSION = 201;
 
-    private List<String> barcodesList = new ArrayList<>();
+    private List<String> barcodesList;
 
     private ListView listView;
 
@@ -56,9 +58,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //    public static final String URL = "http://153.19.70.197:7323/receive-books-barcode";
     //DEVELOPER IP
     public static final String URL = "http://153.19.70.138:8080/receive-books-barcode";
-    private int requestCode;
-    private int resultCode;
-    private Intent intent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,6 +65,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_main);
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
+        barcodesList = new ArrayList<>();
+        databaseHelper = new DatabaseHelper(this);
 
         Button sendButton = (Button) findViewById(R.id.send_btn);
         sendButton.setOnClickListener(this);
@@ -138,9 +140,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void updateListView() {
 
         //Create a cursor
-        SQLiteOpenHelper databaseHepler = new DatabaseHelper(this);
+//        SQLiteOpenHelper databaseHelper = new DatabaseHelper(this);
         try {
-            db = databaseHepler.getReadableDatabase();
+            db = databaseHelper.getReadableDatabase();
             cursor = db.query("BORROWED",
                     new String[]{"_id", "BARCODE"},
                     null, null, null, null, "_id DESC");
