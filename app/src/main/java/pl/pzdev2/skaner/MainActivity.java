@@ -1,5 +1,6 @@
 package pl.pzdev2.skaner;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
@@ -11,7 +12,10 @@ import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.util.SparseArray;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -49,6 +53,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private BarcodeDetector barcodeDetector;
     private CameraSource cameraSource;
     private static final int REQUEST_CAMERA_PERMISSION = 201;
+
+    int i = 0;
 
     private List<String> barcodesList;
 
@@ -218,10 +224,26 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             Barcode thisCode = barcodes.valueAt(0);
                             String barcode = thisCode.rawValue;
 
+                            try {
+                                long l =  Long.parseLong(barcode);
+                                if(barcode.length() == 12){
                             if(!barcodesList.contains(barcode)) {
-                                barcodesList.add(barcode);
-                                DatabaseHelper.insertBook(db, barcode);
+
+                                    barcodesList.add(barcode);
+                                    DatabaseHelper.insertBook(db, barcode);
+
+                                    Vibrator v = (Vibrator) getSystemService(getApplicationContext().VIBRATOR_SERVICE);
+                                    // Vibrate for 200 milliseconds
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                        v.vibrate(VibrationEffect.createOneShot(200, VibrationEffect.DEFAULT_AMPLITUDE));
+                                    } else {
+                                        //deprecated in API 26
+                                        v.vibrate(200);
+                                    }
+                                }
                             }
+                            } catch (NumberFormatException e) {}
+
                             updateListView();
                         }
                     });
