@@ -121,11 +121,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 } while (cursor.moveToNext());
 
                 sendBarcode(barcodeList);
-                enableButton();
             }
         } catch (SQLException e) {
-            Toast toast = Toast.makeText(this, "Dane nieosiągalne", Toast.LENGTH_SHORT);
-            toast.show();
+            Toast.makeText(this, "Dane nieosiągalne", Toast.LENGTH_SHORT).show();
+            enableButton();
         }
     }
 
@@ -142,6 +141,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         updateListView();
 
                         Toast.makeText(getApplicationContext(), "Dane przesłane na serwer", Toast.LENGTH_LONG).show();
+
+                        enableButton();
 
                     }
                 }, new Response.ErrorListener() {
@@ -181,6 +182,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 //                Toast.makeText(getApplicationContext(), error.toString(), Toast.LENGTH_LONG).show();
                 txtView.setText(error.toString());
+                enableButton();
 
             }
         });
