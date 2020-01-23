@@ -1,17 +1,16 @@
 package pl.pzdev2.skaner;
 
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import android.Manifest;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.VibrationEffect;
@@ -24,10 +23,17 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.NetworkError;
+import com.android.volley.NoConnectionError;
+import com.android.volley.ParseError;
 import com.android.volley.Request;
 import com.android.volley.Response;
+import com.android.volley.ServerError;
+import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.google.android.gms.vision.CameraSource;
@@ -38,6 +44,7 @@ import com.google.android.gms.vision.barcode.BarcodeDetector;
 import org.json.JSONArray;
 
 import java.io.IOException;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,7 +54,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Cursor cursor;
     private SQLiteOpenHelper databaseHelper;
     private SimpleCursorAdapter listAdapter;
-
+    private Button sendButton;
 
     private SurfaceView surfaceView;
     private BarcodeDetector barcodeDetector;
@@ -59,6 +66,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private List<String> barcodesList;
 
     private ListView listView;
+
+    private TextView txtView;
 
     //PRODUCTION IP
 //    public static final String URL = "http://153.19.70.197:7323/receive-books-barcode";
@@ -75,10 +84,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         barcodesList = new ArrayList<>();
         databaseHelper = new DatabaseHelper(this);
 
-        Button sendButton = (Button) findViewById(R.id.send_btn);
+        sendButton = (Button) findViewById(R.id.send_btn);
         sendButton.setOnClickListener(this);
 
         listView = (ListView) findViewById(R.id.list_books);
+        txtView = (TextView) findViewById(R.id.textView);
 
         surfaceView = (SurfaceView) findViewById(R.id.barcode_sv);
 
@@ -103,13 +113,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //                SQLiteDatabase db = databaseHelper.getReadableDatabase();
             cursor = db.query("BORROWED", new String[]{"BARCODE"}, null, null, null, null, null);
             if (cursor.moveToFirst()) {
+                disableButton();
                 do {
                     //calling the method to save the barcodes to MySQL
                     barcodeList.add(cursor.getString(0));
 
                 } while (cursor.moveToNext());
-                sendBarcode(barcodeList);
 
+                sendBarcode(barcodeList);
+                enableButton();
             }
         } catch (SQLException e) {
             Toast toast = Toast.makeText(this, "Dane nieosiągalne", Toast.LENGTH_SHORT);
@@ -135,7 +147,41 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Toast.makeText(getApplicationContext(), "Błąd przesyłu danych!!!", Toast.LENGTH_LONG).show();
+//                Toast.makeText(getApplicationContext(), "Błąd przesyłu danych!!!", Toast.LENGTH_LONG).show();
+
+                if (error instanceof TimeoutError || error instanceof NoConnectionError) {
+                    Toast.makeText(getApplicationContext(),
+                            "TimeoutError or NoConnectionError",
+                            Toast.LENGTH_LONG).show();
+                } else if (error instanceof AuthFailureError) {
+                    //TODO
+                    Toast.makeText(getApplicationContext(),
+                            "AuthFailureError",
+                            Toast.LENGTH_LONG).show();
+                } else if (error instanceof ServerError) {
+                    //TODO
+                    Toast.makeText(getApplicationContext(),
+                            "ServerError",
+                            Toast.LENGTH_LONG).show();
+                } else if (error instanceof NetworkError) {
+                    //TODO
+                    Toast.makeText(getApplicationContext(),
+                            "NetworkError",
+                            Toast.LENGTH_LONG).show();
+                } else if (error instanceof ParseError) {
+                    //TODO
+                    Toast.makeText(getApplicationContext(),
+                            "ParseError",
+                            Toast.LENGTH_LONG).show();
+                } else if (error.getCause() instanceof SocketException) {
+                    Toast.makeText(getApplicationContext(),
+                            "SocketException",
+                            Toast.LENGTH_LONG).show();
+                }
+
+//                Toast.makeText(getApplicationContext(), error.toString(), Toast.LENGTH_LONG).show();
+                txtView.setText(error.toString());
+
             }
         });
 
@@ -226,7 +272,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                             try {
                                 long l =  Long.parseLong(barcode);
-                                if(barcode.length() == 12){
+//                                if(barcode.length() == 12){
                             if(!barcodesList.contains(barcode)) {
 
                                     barcodesList.add(barcode);
@@ -241,7 +287,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                         v.vibrate(200);
                                     }
                                 }
-                            }
+//                            }
                             } catch (NumberFormatException e) {}
 
                             updateListView();
@@ -252,6 +298,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
     }
 
+    private void enableButton() {
+        sendButton.setEnabled(true);
+        sendButton.setBackgroundColor(Color.parseColor("#ff99cc00"));
+    }
+
+    private void disableButton(){
+        sendButton.setEnabled(false);
+        sendButton.setBackgroundColor(Color.LTGRAY);
+    }
     @Override
     public void onClick(View v) {
 //Sprawdzanie czy został kliknięty przycisk
