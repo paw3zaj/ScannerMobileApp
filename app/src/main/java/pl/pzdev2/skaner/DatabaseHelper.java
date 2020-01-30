@@ -20,7 +20,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         db.execSQL("CREATE TABLE BORROWED ("
                 + "_id INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + "BARCODE TEXT);");
+                + "BARCODE TEXT, "
+                + "CREATEDDATE DATETIME DEFAULT CURRENT_TIMESTAMP);");
 //        insertBook(db,"33333");
 //        insertBook(db,"1111");
 //        insertBook(db,"22222");
