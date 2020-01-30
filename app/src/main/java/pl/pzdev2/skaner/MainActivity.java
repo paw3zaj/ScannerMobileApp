@@ -61,8 +61,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private CameraSource cameraSource;
     private static final int REQUEST_CAMERA_PERMISSION = 201;
 
-    int i = 0;
-
     private List<String> barcodesList;
 
     private ListView listView;
