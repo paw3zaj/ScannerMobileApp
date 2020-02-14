@@ -1,5 +1,6 @@
 package pl.pzdev2.skaner;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
@@ -264,6 +265,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if(barcodes.size() != 0) {
 
                     listView.post(new Runnable() {
+                        @RequiresApi(api = Build.VERSION_CODES.O)
                         @Override
                         public void run() {
 
@@ -276,7 +278,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             if(!barcodesList.contains(barcode)) {
 
                                     barcodesList.add(barcode);
-                                    DatabaseHelper.insertBook(db, barcode);
+                                    DatabaseHelper.insertBook(db, barcode, FormatDateTime.dateTime());
 
                                     Vibrator v = (Vibrator) getSystemService(getApplicationContext().VIBRATOR_SERVICE);
                                     // Vibrate for 200 milliseconds

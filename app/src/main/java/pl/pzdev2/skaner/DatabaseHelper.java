@@ -21,7 +21,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("CREATE TABLE BORROWED ("
                 + "_id INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + "BARCODE TEXT, "
-                + "CREATEDDATE DATETIME DEFAULT CURRENT_TIMESTAMP);");
+                + "CREATED_DATE TEXT);");
 //        insertBook(db,"33333");
 //        insertBook(db,"1111");
 //        insertBook(db,"22222");
@@ -34,10 +34,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     //Metoda 'customer' dodaje rekord do SQLite
-    public static void insertBook(SQLiteDatabase db, String barCode) {
+    public static void insertBook(SQLiteDatabase db, String barCode, String createdDate) {
 
         ContentValues bookValue = new ContentValues();
         bookValue.put("BARCODE", barCode);
+        bookValue.put("CREATED_DATE", createdDate);
         db.insert("BORROWED", null, bookValue);
     }
 
