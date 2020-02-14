@@ -43,6 +43,7 @@ import com.google.android.gms.vision.barcode.Barcode;
 import com.google.android.gms.vision.barcode.BarcodeDetector;
 
 import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.SocketException;
@@ -106,16 +107,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void onSend() {
 
-        List<String> barcodeList = new ArrayList<String>();
+        List<ScannerLogs> barcodeList = new ArrayList<>();
 
         try {
 //                SQLiteDatabase db = databaseHelper.getReadableDatabase();
-            cursor = db.query("BORROWED", new String[]{"BARCODE"}, null, null, null, null, null);
+            cursor = db.query("BORROWED", new String[]{"BARCODE", "CREATED_DATE"}, null, null, null, null, null);
             if (cursor.moveToFirst()) {
                 disableButton();
                 do {
                     //calling the method to save the barcodes to MySQL
-                    barcodeList.add(cursor.getString(0));
+
+//                    barcodeList.add(cursor.getString(0));
+//                    barcodeList.add(cursor.getString(1));
+                    barcodeList.add(new ScannerLogs(cursor.getString(0), cursor.getString(1)));
 
                 } while (cursor.moveToNext());
 
@@ -127,7 +131,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    private void sendBarcode(final List<String> barCode) {
+    private void sendBarcode(final List<ScannerLogs> barCode) {
 
         // Define the POST request
         JsonArrayRequest req = new JsonArrayRequest(Request.Method.POST, URL, new JSONArray(barCode),
