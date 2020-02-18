@@ -28,4 +28,12 @@ public class ScannerLogs {
     public void setCreatedDate(String createdDate) {
         this.createdDate = createdDate;
     }
+
+    @Override
+    public String toString() {
+        return "ScannerLogs{" +
+                "barcode='" + barcode + '\'' +
+                ", createdDate='" + createdDate + '\'' +
+                '}';
+    }
 }
