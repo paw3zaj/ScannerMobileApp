@@ -49,11 +49,10 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.SocketException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -309,13 +308,11 @@ for(int ii=0; ii < jArray.length(); ii++)
                 if(barcodes.size() != 0) {
 
                     listView.post(new Runnable() {
-                        @RequiresApi(api = Build.VERSION_CODES.O)
                         @Override
                         public void run() {
 
                             Barcode thisCode = barcodes.valueAt(0);
                             String barcode = thisCode.rawValue;
-                            String createdDate = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 
                             try {
                                 long l =  Long.parseLong(barcode);
@@ -323,7 +320,7 @@ for(int ii=0; ii < jArray.length(); ii++)
                             if(!barcodesList.contains(barcode)) {
 
                                     barcodesList.add(barcode);
-                                    DatabaseHelper.insertBook(db, barcode, createdDate);
+                                    DatabaseHelper.insertBook(db, barcode, FormatDateTime.dateTime());
 
                                     Vibrator v = (Vibrator) getSystemService(getApplicationContext().VIBRATOR_SERVICE);
                                     // Vibrate for 200 milliseconds
