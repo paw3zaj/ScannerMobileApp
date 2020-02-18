@@ -37,18 +37,23 @@ import com.android.volley.ServerError;
 import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.google.android.gms.vision.CameraSource;
 import com.google.android.gms.vision.Detector;
 import com.google.android.gms.vision.barcode.Barcode;
 import com.google.android.gms.vision.barcode.BarcodeDetector;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.SocketException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -72,7 +77,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     //PRODUCTION IP
 //    public static final String URL = "http://153.19.70.197:7323/receive-books-barcode";
     //DEVELOPER IP
-    public static final String URL = "http://153.19.70.138:8080/receive-books-barcode";
+    public static final String URL = "http://153.19.70.138:8080/receive-book";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -105,10 +110,31 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         db.close();
     }
 
-    private void onSend() {
+    private void onSend() throws JSONException {
 
+        /*
+        *
+
+SomeClass obj1 = new SomeClass();
+obj1.setValue("val1");
+sList.add(obj1);
+
+SomeClass obj2 = new SomeClass();
+obj2.setValue("val2");
+sList.add(obj2);
+
+obj.put("list", sList);
+
+JSONArray jArray = obj.getJSONArray("list");
+for(int ii=0; ii < jArray.length(); ii++)
+  System.out.println(jArray.getJSONObject(ii).getString("value"));
+        * */
+//        JSONObject obj = new JSONObject();
         List<ScannerLogs> barcodeList = new ArrayList<>();
+    String b;
+    String d;
 
+//            List<String> stringList = new ArrayList<>();
         try {
 //                SQLiteDatabase db = databaseHelper.getReadableDatabase();
             cursor = db.query("BORROWED", new String[]{"BARCODE", "CREATED_DATE"}, null, null, null, null, null);
@@ -120,10 +146,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //                    barcodeList.add(cursor.getString(0));
 //                    barcodeList.add(cursor.getString(1));
                     barcodeList.add(new ScannerLogs(cursor.getString(0), cursor.getString(1)));
+//                        stringList.add(cursor.getString(0));
+//                        stringList.add(cursor.getString(1));
+                    b = cursor.getString(0);
+                    d = cursor.getString(1);
 
                 } while (cursor.moveToNext());
-
-                sendBarcode(barcodeList);
+                for(ScannerLogs log : barcodeList) {
+                    log.toString();
+                    System.out.println(log.getBarcode());
+                    System.out.println(log.getCreatedDate());
+                    System.out.println("w pętli");
+                }
+//                obj.put("", barcodeList);
+//                sendBarcode(obj);
+                sendBarcode(new ScannerLogs(b, d));
             }
         } catch (SQLException e) {
             Toast.makeText(this, "Dane nieosiągalne", Toast.LENGTH_SHORT).show();
@@ -131,13 +168,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    private void sendBarcode(final List<ScannerLogs> barCode) {
+    private void sendBarcode(final ScannerLogs barCode) throws JSONException {
 
+        JSONObject job = new JSONObject();
+        job.put("barcode", barCode.getBarcode().toString());
+        job.put("createdDate", barCode.getCreatedDate().toString());
         // Define the POST request
-        JsonArrayRequest req = new JsonArrayRequest(Request.Method.POST, URL, new JSONArray(barCode),
-                new Response.Listener<JSONArray>() {
+        JsonObjectRequest req = new JsonObjectRequest(Request.Method.POST, URL, job,
+                new Response.Listener<JSONObject>() {
                     @Override
-                    public void onResponse(JSONArray response) {
+                    public void onResponse(JSONObject response) {
 
                         DatabaseHelper.deleteAll(db);
 
@@ -275,6 +315,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                             Barcode thisCode = barcodes.valueAt(0);
                             String barcode = thisCode.rawValue;
+                            String createdDate = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 
                             try {
                                 long l =  Long.parseLong(barcode);
@@ -282,7 +323,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             if(!barcodesList.contains(barcode)) {
 
                                     barcodesList.add(barcode);
-                                    DatabaseHelper.insertBook(db, barcode, FormatDateTime.dateTime());
+                                    DatabaseHelper.insertBook(db, barcode, createdDate);
 
                                     Vibrator v = (Vibrator) getSystemService(getApplicationContext().VIBRATOR_SERVICE);
                                     // Vibrate for 200 milliseconds
@@ -318,7 +359,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //Sprawdzanie czy został kliknięty przycisk
         switch (v.getId()) {
             case R.id.send_btn:
-                onSend();
+                try {
+                    onSend();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
                 break;
         }
     }

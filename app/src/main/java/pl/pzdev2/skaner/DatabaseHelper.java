@@ -9,7 +9,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DB_NAME = "statistics";
     private static final int DB_VERSION = 1;
-    public static final String BARCODE = "barCode";
+    public static final String BARCODE = "barcode";
 
     public DatabaseHelper(Context context) {
         super(context, DB_NAME, null, DB_VERSION);
@@ -34,10 +34,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     //Metoda 'customer' dodaje rekord do SQLite
-    public static void insertBook(SQLiteDatabase db, String barCode, String createdDate) {
+    public static void insertBook(SQLiteDatabase db, String barcode, String createdDate) {
 
         ContentValues bookValue = new ContentValues();
-        bookValue.put("BARCODE", barCode);
+        bookValue.put("BARCODE", barcode);
         bookValue.put("CREATED_DATE", createdDate);
         db.insert("BORROWED", null, bookValue);
     }
