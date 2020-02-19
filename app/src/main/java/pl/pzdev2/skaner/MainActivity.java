@@ -76,7 +76,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     //PRODUCTION IP
 //    public static final String URL = "http://153.19.70.197:7323/receive-books-barcode";
     //DEVELOPER IP
-    public static final String URL = "http://153.19.70.138:8080/receive-book";
+    public static final String URL = "http://153.19.70.138:8080/receive-books-barcode";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -111,27 +111,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void onSend() throws JSONException {
 
-        /*
-        *
-
-SomeClass obj1 = new SomeClass();
-obj1.setValue("val1");
-sList.add(obj1);
-
-SomeClass obj2 = new SomeClass();
-obj2.setValue("val2");
-sList.add(obj2);
-
-obj.put("list", sList);
-
-JSONArray jArray = obj.getJSONArray("list");
-for(int ii=0; ii < jArray.length(); ii++)
-  System.out.println(jArray.getJSONObject(ii).getString("value"));
-        * */
-//        JSONObject obj = new JSONObject();
         List<ScannerLogs> barcodeList = new ArrayList<>();
-    String b;
-    String d;
 
 //            List<String> stringList = new ArrayList<>();
         try {
@@ -147,19 +127,9 @@ for(int ii=0; ii < jArray.length(); ii++)
                     barcodeList.add(new ScannerLogs(cursor.getString(0), cursor.getString(1)));
 //                        stringList.add(cursor.getString(0));
 //                        stringList.add(cursor.getString(1));
-                    b = cursor.getString(0);
-                    d = cursor.getString(1);
 
                 } while (cursor.moveToNext());
-                for(ScannerLogs log : barcodeList) {
-                    log.toString();
-                    System.out.println(log.getBarcode());
-                    System.out.println(log.getCreatedDate());
-                    System.out.println("w pętli");
-                }
-//                obj.put("", barcodeList);
-//                sendBarcode(obj);
-                sendBarcode(new ScannerLogs(b, d));
+                sendBarcode(barcodeList);
             }
         } catch (SQLException e) {
             Toast.makeText(this, "Dane nieosiągalne", Toast.LENGTH_SHORT).show();
@@ -167,16 +137,26 @@ for(int ii=0; ii < jArray.length(); ii++)
         }
     }
 
-    private void sendBarcode(final ScannerLogs barCode) throws JSONException {
+    private void sendBarcode(final List<ScannerLogs> barCode) throws JSONException {
 
+        JSONArray jar = new JSONArray();
+        System.out.println("start");
+
+        for(ScannerLogs scanLog : barCode) {
+            jar.put(scanLog.toString());
+//            jar.put(scanLog.getCreatedDate());
+        }
+
+//        System.out.println(jar.toString());
+        System.out.println("stop");
         JSONObject job = new JSONObject();
-        job.put("barcode", barCode.getBarcode().toString());
-        job.put("createdDate", barCode.getCreatedDate().toString());
+//        job.put("barcode", barCode.getBarcode());
+//        job.put("createdDate", barCode.getCreatedDate());
         // Define the POST request
-        JsonObjectRequest req = new JsonObjectRequest(Request.Method.POST, URL, job,
-                new Response.Listener<JSONObject>() {
+        JsonArrayRequest req = new JsonArrayRequest(Request.Method.POST, URL, jar,
+                new Response.Listener<JSONArray>() {
                     @Override
-                    public void onResponse(JSONObject response) {
+                    public void onResponse(JSONArray response) {
 
                         DatabaseHelper.deleteAll(db);
 

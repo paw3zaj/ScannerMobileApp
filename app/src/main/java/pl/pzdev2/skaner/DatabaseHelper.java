@@ -22,7 +22,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + "_id INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + "BARCODE TEXT, "
                 + "CREATED_DATE TEXT);");
-//        insertBook(db,"33333");
+//        insertBook(db,"33333", FormatDateTime.dateTime());
 //        insertBook(db,"1111");
 //        insertBook(db,"22222");
 //        insertBook(db,"3333");
