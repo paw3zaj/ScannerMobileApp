@@ -52,7 +52,9 @@ import java.net.SocketException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -77,7 +79,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //    public static final String URL = "http://153.19.70.197:7323/receive-books-barcode";
     //DEVELOPER IP
     public static final String URL = "http://153.19.70.138:8080/receive-books-barcode";
-
+//    public static final String URL = "http://153.19.70.138:8080/receive-book";
+ 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -139,17 +142,26 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void sendBarcode(final List<ScannerLogs> barCode) throws JSONException {
 
+//        List<Map<String, String>> mapList = new ArrayList<>();
+
+        Map<String, String> map = new HashMap<>();
+//        map.put("barcode", )
         JSONArray jar = new JSONArray();
+        JSONObject job = new JSONObject();
         System.out.println("start");
 
         for(ScannerLogs scanLog : barCode) {
-            jar.put(scanLog.toString());
+
+//            jar.put(scanLog.toString());
 //            jar.put(scanLog.getCreatedDate());
+            job.put("barcode", scanLog.getBarcode());
+            job.put("createdDate", scanLog.getCreatedDate());
+            jar.put(job);
         }
 
 //        System.out.println(jar.toString());
         System.out.println("stop");
-        JSONObject job = new JSONObject();
+
 //        job.put("barcode", barCode.getBarcode());
 //        job.put("createdDate", barCode.getCreatedDate());
         // Define the POST request
