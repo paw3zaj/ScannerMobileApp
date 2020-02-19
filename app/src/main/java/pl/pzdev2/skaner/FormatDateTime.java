@@ -10,7 +10,6 @@ public class FormatDateTime {
     public static String dateTime() {
 
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(DATE_FORMATTER);
-        // get current date time
         return simpleDateFormat.format(new Date());
     }
 

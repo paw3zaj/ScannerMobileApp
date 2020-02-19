@@ -1,6 +1,5 @@
 package pl.pzdev2.skaner;
 
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
@@ -37,7 +36,6 @@ import com.android.volley.ServerError;
 import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
-import com.android.volley.toolbox.JsonObjectRequest;
 import com.google.android.gms.vision.CameraSource;
 import com.google.android.gms.vision.Detector;
 import com.google.android.gms.vision.barcode.Barcode;
@@ -49,12 +47,9 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.SocketException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -70,17 +65,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static final int REQUEST_CAMERA_PERMISSION = 201;
 
     private List<String> barcodesList;
+    private JSONArray jar;
 
     private ListView listView;
 
-    private TextView txtView;
+//    private TextView txtView;
 
     //PRODUCTION IP
 //    public static final String URL = "http://153.19.70.197:7323/receive-books-barcode";
     //DEVELOPER IP
     public static final String URL = "http://153.19.70.138:8080/receive-books-barcode";
-//    public static final String URL = "http://153.19.70.138:8080/receive-book";
- 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -95,14 +90,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         sendButton.setOnClickListener(this);
 
         listView = (ListView) findViewById(R.id.list_books);
-        txtView = (TextView) findViewById(R.id.textView);
-
         surfaceView = (SurfaceView) findViewById(R.id.barcode_sv);
 
         updateListView();
-
         scanBarcode();
-
     }
 
     @Override
@@ -112,11 +103,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         db.close();
     }
 
-    private void onSend() throws JSONException {
+    private void onSend() {
 
-        List<ScannerLogs> barcodeList = new ArrayList<>();
+        jar = new JSONArray();
 
-//            List<String> stringList = new ArrayList<>();
         try {
 //                SQLiteDatabase db = databaseHelper.getReadableDatabase();
             cursor = db.query("BORROWED", new String[]{"BARCODE", "CREATED_DATE"}, null, null, null, null, null);
@@ -124,15 +114,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 disableButton();
                 do {
                     //calling the method to save the barcodes to MySQL
-
-//                    barcodeList.add(cursor.getString(0));
-//                    barcodeList.add(cursor.getString(1));
-                    barcodeList.add(new ScannerLogs(cursor.getString(0), cursor.getString(1)));
-//                        stringList.add(cursor.getString(0));
-//                        stringList.add(cursor.getString(1));
+                    jar.put(new JSONObject(new HashMap<String, String>(){{
+                        put("barcode", cursor.getString(0));
+                        put("createdDate", cursor.getString(1));
+                    }}));
 
                 } while (cursor.moveToNext());
-                sendBarcode(barcodeList);
+
+                sendBarcode(jar);
             }
         } catch (SQLException e) {
             Toast.makeText(this, "Dane nieosiągalne", Toast.LENGTH_SHORT).show();
@@ -140,32 +129,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    private void sendBarcode(final List<ScannerLogs> barCode) throws JSONException {
+    private void sendBarcode(JSONArray barcodeList) {
 
-//        List<Map<String, String>> mapList = new ArrayList<>();
-
-        Map<String, String> map = new HashMap<>();
-//        map.put("barcode", )
-        JSONArray jar = new JSONArray();
-        JSONObject job = new JSONObject();
-        System.out.println("start");
-
-        for(ScannerLogs scanLog : barCode) {
-
-//            jar.put(scanLog.toString());
-//            jar.put(scanLog.getCreatedDate());
-            job.put("barcode", scanLog.getBarcode());
-            job.put("createdDate", scanLog.getCreatedDate());
-            jar.put(job);
-        }
-
-//        System.out.println(jar.toString());
-        System.out.println("stop");
-
-//        job.put("barcode", barCode.getBarcode());
-//        job.put("createdDate", barCode.getCreatedDate());
         // Define the POST request
-        JsonArrayRequest req = new JsonArrayRequest(Request.Method.POST, URL, jar,
+        JsonArrayRequest req = new JsonArrayRequest(Request.Method.POST, URL, barcodeList,
                 new Response.Listener<JSONArray>() {
                     @Override
                     public void onResponse(JSONArray response) {
@@ -182,7 +149,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-//                Toast.makeText(getApplicationContext(), "Błąd przesyłu danych!!!", Toast.LENGTH_LONG).show();
 
                 if (error instanceof TimeoutError || error instanceof NoConnectionError) {
                     Toast.makeText(getApplicationContext(),
@@ -212,10 +178,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     Toast.makeText(getApplicationContext(),
                             "SocketException",
                             Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(getApplicationContext(), error.toString(), Toast.LENGTH_LONG).show();
                 }
 
-//                Toast.makeText(getApplicationContext(), error.toString(), Toast.LENGTH_LONG).show();
-                txtView.setText(error.toString());
                 enableButton();
 
             }
@@ -308,7 +274,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                             try {
                                 long l =  Long.parseLong(barcode);
-//                                if(barcode.length() == 12){
+                                if(barcode.length() == 12){
                             if(!barcodesList.contains(barcode)) {
 
                                     barcodesList.add(barcode);
@@ -323,7 +289,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                         v.vibrate(200);
                                     }
                                 }
-//                            }
+                            }
                             } catch (NumberFormatException e) {}
 
                             updateListView();
@@ -348,11 +314,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //Sprawdzanie czy został kliknięty przycisk
         switch (v.getId()) {
             case R.id.send_btn:
-                try {
-                    onSend();
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
+                onSend();
                 break;
         }
     }
