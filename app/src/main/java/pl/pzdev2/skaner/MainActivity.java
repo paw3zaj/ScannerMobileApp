@@ -23,7 +23,6 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
@@ -42,7 +41,6 @@ import com.google.android.gms.vision.barcode.Barcode;
 import com.google.android.gms.vision.barcode.BarcodeDetector;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -72,9 +70,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //    private TextView txtView;
 
     //PRODUCTION IP
-//    public static final String URL = "http://153.19.70.197:7323/receive-books-barcode";
+    public static final String URL = "http://153.19.70.197:7323/receive-books-barcode";
     //DEVELOPER IP
-    public static final String URL = "http://153.19.70.138:8080/receive-books-barcode";
+//    public static final String URL = "http://153.19.70.138:8080/receive-books-barcode";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
