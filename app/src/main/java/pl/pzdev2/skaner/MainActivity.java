@@ -26,6 +26,7 @@ import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.NetworkError;
 import com.android.volley.NoConnectionError;
 import com.android.volley.ParseError;
@@ -184,6 +185,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             }
         });
+
+        // avoid volley sending data twice bug
+        req.setRetryPolicy(new DefaultRetryPolicy(
+                0,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 
         // Add the request object to the queue to be executed
         MySingleton.getInstance(this).addToRequestQueue(req);
