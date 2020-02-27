@@ -26,6 +26,7 @@ import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.NetworkError;
 import com.android.volley.NoConnectionError;
 import com.android.volley.ParseError;
@@ -148,24 +149,28 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void onErrorResponse(VolleyError error) {
 
-                if (error instanceof TimeoutError || error instanceof NoConnectionError) {
+                if (error instanceof NoConnectionError) {
                     Toast.makeText(getApplicationContext(),
-                            "TimeoutError or NoConnectionError",
+                            "Sieć wifi niedostępna",
+                            Toast.LENGTH_LONG).show();
+                } else if(error instanceof TimeoutError) {
+                    Toast.makeText(getApplicationContext(),
+                            "Przekroczony czas oczekiwania na połączenie z siecią",
                             Toast.LENGTH_LONG).show();
                 } else if (error instanceof AuthFailureError) {
                     //TODO
                     Toast.makeText(getApplicationContext(),
-                            "AuthFailureError",
+                            "Błąd poświadczenia",
                             Toast.LENGTH_LONG).show();
                 } else if (error instanceof ServerError) {
                     //TODO
                     Toast.makeText(getApplicationContext(),
-                            "ServerError",
+                            "Błąd serwera",
                             Toast.LENGTH_LONG).show();
                 } else if (error instanceof NetworkError) {
                     //TODO
                     Toast.makeText(getApplicationContext(),
-                            "NetworkError",
+                            "Błąd połączenia",
                             Toast.LENGTH_LONG).show();
                 } else if (error instanceof ParseError) {
                     //TODO
@@ -184,6 +189,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             }
         });
+
+        // avoid volley sending data twice bug
+        req.setRetryPolicy(new DefaultRetryPolicy(
+                0,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 
         // Add the request object to the queue to be executed
         MySingleton.getInstance(this).addToRequestQueue(req);
