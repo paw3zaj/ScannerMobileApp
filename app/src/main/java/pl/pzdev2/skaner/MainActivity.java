@@ -149,24 +149,28 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void onErrorResponse(VolleyError error) {
 
-                if (error instanceof TimeoutError || error instanceof NoConnectionError) {
+                if (error instanceof NoConnectionError) {
                     Toast.makeText(getApplicationContext(),
-                            "TimeoutError or NoConnectionError",
+                            "Sieć wifi niedostępna",
+                            Toast.LENGTH_LONG).show();
+                } else if(error instanceof TimeoutError) {
+                    Toast.makeText(getApplicationContext(),
+                            "Przekroczony czas oczekiwania na połączenie z siecią",
                             Toast.LENGTH_LONG).show();
                 } else if (error instanceof AuthFailureError) {
                     //TODO
                     Toast.makeText(getApplicationContext(),
-                            "AuthFailureError",
+                            "Błąd poświadczenia",
                             Toast.LENGTH_LONG).show();
                 } else if (error instanceof ServerError) {
                     //TODO
                     Toast.makeText(getApplicationContext(),
-                            "ServerError",
+                            "Błąd serwera",
                             Toast.LENGTH_LONG).show();
                 } else if (error instanceof NetworkError) {
                     //TODO
                     Toast.makeText(getApplicationContext(),
-                            "NetworkError",
+                            "Błąd połączenia",
                             Toast.LENGTH_LONG).show();
                 } else if (error instanceof ParseError) {
                     //TODO
