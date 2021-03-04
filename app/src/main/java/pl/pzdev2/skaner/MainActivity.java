@@ -1,5 +1,6 @@
 package pl.pzdev2.skaner;
 
+import android.widget.*;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
@@ -20,10 +21,6 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.Button;
-import android.widget.ListView;
-import android.widget.SimpleCursorAdapter;
-import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
@@ -46,9 +43,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.SocketException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -63,17 +58,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private CameraSource cameraSource;
     private static final int REQUEST_CAMERA_PERMISSION = 201;
 
-    private List<String> barcodesList;
+    private Map<String, Integer> barcodeMap;
     private JSONArray jar;
 
     private ListView listView;
 
-//    private TextView txtView;
+    private Integer i = 0;
+    private TextView txtSize;
+    private TextView txtView;
 
     //PRODUCTION IP
     public static final String URL = "http://153.19.70.197:7323/receive-books-barcode";
     //DEVELOPER IP
 //    public static final String URL = "http://153.19.70.138:8080/receive-books-barcode";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,11 +80,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
-        barcodesList = new ArrayList<>();
+//        barcodeMap = new ArrayList<>();
+        barcodeMap = new HashMap<>();
         databaseHelper = new DatabaseHelper(this);
 
         sendButton = (Button) findViewById(R.id.send_btn);
         sendButton.setOnClickListener(this);
+
+        txtSize = (TextView) findViewById(R.id.size_txt);
+        txtView = (TextView) findViewById(R.id.counter_txt);
 
         listView = (ListView) findViewById(R.id.list_books);
         surfaceView = (SurfaceView) findViewById(R.id.barcode_sv);
@@ -274,35 +276,41 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                 if(barcodes.size() != 0) {
 
-                    listView.post(new Runnable() {
-                        @Override
-                        public void run() {
+                    listView.post(() -> {
 
-                            Barcode thisCode = barcodes.valueAt(0);
-                            String barcode = thisCode.rawValue;
+                        Barcode thisCode = barcodes.valueAt(0);
+                        String barcode = thisCode.rawValue;
 
-                            try {
-                                long l =  Long.parseLong(barcode);
-                                if(barcode.length() == 12){
-                            if(!barcodesList.contains(barcode)) {
+                        try {
+                            long l =  Long.parseLong(barcode);
+//                                if(barcode.length() == 12){
+                            txtView.setText(i.toString());
+                            txtSize.setText(size().toString());
+                        if(count(barcode) == 3) {
 
-                                    barcodesList.add(barcode);
-                                    DatabaseHelper.insertBook(db, barcode, FormatDateTime.dateTime());
+//                                    barcodeMap.add(barcode);
+                                DatabaseHelper.insertBook(db, barcode, FormatDateTime.dateTime());
 
-                                    Vibrator v = (Vibrator) getSystemService(getApplicationContext().VIBRATOR_SERVICE);
-                                    // Vibrate for 200 milliseconds
-                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                        v.vibrate(VibrationEffect.createOneShot(200, VibrationEffect.DEFAULT_AMPLITUDE));
-                                    } else {
-                                        //deprecated in API 26
-                                        v.vibrate(200);
-                                    }
+                                Vibrator v = (Vibrator) getSystemService(getApplicationContext().VIBRATOR_SERVICE);
+                                // Vibrate for 200 milliseconds
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                    v.vibrate(VibrationEffect.createOneShot(200, VibrationEffect.DEFAULT_AMPLITUDE));
+                                } else {
+                                    //deprecated in API 26
+                                    v.vibrate(200);
                                 }
-                            }
-                            } catch (NumberFormatException e) {}
 
-                            updateListView();
-                        }
+
+
+                            }
+
+
+//                            }
+                        } catch (NumberFormatException e) {}
+
+                        updateListView();
+
+
                     });
                 }
             }
@@ -326,5 +334,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 onSend();
                 break;
         }
+    }
+
+    private Integer count(String barcode) {
+        this.barcodeMap.merge(barcode, 1, Integer::sum);
+        i=this.barcodeMap.get(barcode);
+
+        return i;
+    }
+
+    private Integer size(){
+        Integer s = this.barcodeMap.size();
+        return s;
     }
 }
