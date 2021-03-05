@@ -28,10 +28,8 @@ import com.android.volley.NetworkError;
 import com.android.volley.NoConnectionError;
 import com.android.volley.ParseError;
 import com.android.volley.Request;
-import com.android.volley.Response;
 import com.android.volley.ServerError;
 import com.android.volley.TimeoutError;
-import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.google.android.gms.vision.CameraSource;
 import com.google.android.gms.vision.Detector;
@@ -50,10 +48,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private SQLiteDatabase db;
     private Cursor cursor;
     private SQLiteOpenHelper databaseHelper;
-    private SimpleCursorAdapter listAdapter;
     private Button sendButton;
     private SurfaceView surfaceView;
-    private BarcodeDetector barcodeDetector;
     private CameraSource cameraSource;
     private static final int REQUEST_CAMERA_PERMISSION = 201;
     private Map<String, Integer> barcodeMap;
@@ -117,60 +113,50 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         // Define the POST request
         JsonArrayRequest req = new JsonArrayRequest(Request.Method.POST, URL, barcodeList,
-                new Response.Listener<JSONArray>() {
-                    @Override
-                    public void onResponse(JSONArray response) {
+                response -> {
 
-                        DatabaseHelper.deleteAll(db);
+                    DatabaseHelper.deleteAll(db);
 
-                        updateListView();
+                    updateListView();
 
-                        Toast.makeText(getApplicationContext(), "Dane przesłane na serwer", Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(), "Dane przesłane na serwer", Toast.LENGTH_LONG).show();
 
-                        enableButton();
+                    enableButton();
 
-                    }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
+                }, error -> {
 
-                if (error instanceof NoConnectionError) {
-                    Toast.makeText(getApplicationContext(),
-                            "Sieć wifi niedostępna",
-                            Toast.LENGTH_LONG).show();
-                } else if (error instanceof TimeoutError) {
-                    Toast.makeText(getApplicationContext(),
-                            "Przekroczony czas oczekiwania na połączenie z siecią",
-                            Toast.LENGTH_LONG).show();
-                } else if (error instanceof AuthFailureError) {
-                    //TODO
-                    Toast.makeText(getApplicationContext(),
-                            "Błąd poświadczenia",
-                            Toast.LENGTH_LONG).show();
-                } else if (error instanceof ServerError) {
-                    //TODO
-                    Toast.makeText(getApplicationContext(),
-                            "Błąd serwera",
-                            Toast.LENGTH_LONG).show();
-                } else if (error instanceof NetworkError) {
-                    //TODO
-                    Toast.makeText(getApplicationContext(),
-                            "Błąd połączenia",
-                            Toast.LENGTH_LONG).show();
-                } else if (error instanceof ParseError) {
-                    //TODO
-                    Toast.makeText(getApplicationContext(),
-                            "ParseError",
-                            Toast.LENGTH_LONG).show();
-                } else if (error.getCause() instanceof SocketException) {
-                    Toast.makeText(getApplicationContext(),
-                            "SocketException",
-                            Toast.LENGTH_LONG).show();
-                } else {
-                    Toast.makeText(getApplicationContext(), error.toString(), Toast.LENGTH_LONG).show();
-                }
-                enableButton();
+            if (error instanceof NoConnectionError) {
+                Toast.makeText(getApplicationContext(),
+                        "Sieć wifi niedostępna",
+                        Toast.LENGTH_LONG).show();
+            } else if (error instanceof TimeoutError) {
+                Toast.makeText(getApplicationContext(),
+                        "Przekroczony czas oczekiwania na połączenie z siecią",
+                        Toast.LENGTH_LONG).show();
+            } else if (error instanceof AuthFailureError) {
+                Toast.makeText(getApplicationContext(),
+                        "Błąd poświadczenia",
+                        Toast.LENGTH_LONG).show();
+            } else if (error instanceof ServerError) {
+                Toast.makeText(getApplicationContext(),
+                        "Błąd serwera",
+                        Toast.LENGTH_LONG).show();
+            } else if (error instanceof NetworkError) {
+                Toast.makeText(getApplicationContext(),
+                        "Błąd połączenia",
+                        Toast.LENGTH_LONG).show();
+            } else if (error instanceof ParseError) {
+                Toast.makeText(getApplicationContext(),
+                        "ParseError",
+                        Toast.LENGTH_LONG).show();
+            } else if (error.getCause() instanceof SocketException) {
+                Toast.makeText(getApplicationContext(),
+                        "SocketException",
+                        Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(getApplicationContext(), error.toString(), Toast.LENGTH_LONG).show();
             }
+            enableButton();
         });
 
         // avoid volley sending data twice bug
@@ -189,7 +175,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             cursor = db.query("BORROWED",
                     new String[]{"_id", "BARCODE"},
                     null, null, null, null, "_id DESC");
-            listAdapter = new SimpleCursorAdapter(this,
+            SimpleCursorAdapter listAdapter = new SimpleCursorAdapter(this,
                     android.R.layout.simple_list_item_1,
                     cursor,
                     new String[]{"BARCODE"},
@@ -204,7 +190,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void scanBarcode() {
 
-        barcodeDetector = new BarcodeDetector.Builder(getApplicationContext())
+        BarcodeDetector barcodeDetector = new BarcodeDetector.Builder(getApplicationContext())
                 .setBarcodeFormats(Barcode.CODE_39 | Barcode.EAN_13)
                 .build();
 
@@ -258,23 +244,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         String barcode = thisCode.rawValue;
 
                         try {
-                            long l = Long.parseLong(barcode);
-                                if(barcode.length() == 12){
-                            if (counter(barcode)) {
+//                            if (barcode.length() == 12) {
+                                if (counter(barcode)) {
 
-                                DatabaseHelper.insertBook(db, barcode, FormatDateTime.dateTime());
+                                    DatabaseHelper.insertBook(db, barcode, FormatDateTime.dateTime());
 
-                                Vibrator v = (Vibrator) getSystemService(getApplicationContext().VIBRATOR_SERVICE);
-                                // Vibrate for 200 milliseconds
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                    v.vibrate(VibrationEffect.createOneShot(200, VibrationEffect.DEFAULT_AMPLITUDE));
-                                } else {
-                                    //deprecated in API 26
-                                    v.vibrate(200);
+                                    Vibrator v = (Vibrator) getSystemService(getApplicationContext().VIBRATOR_SERVICE);
+                                    // Vibrate for 200 milliseconds
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                        v.vibrate(VibrationEffect.createOneShot(200, VibrationEffect.DEFAULT_AMPLITUDE));
+                                    } else {
+                                        //deprecated in API 26
+                                        v.vibrate(200);
+                                    }
                                 }
-                            }
-                            }
+//                            }
                         } catch (NumberFormatException e) {
+                            Toast.makeText(getApplicationContext(),
+                                    "Problem z zeskanowaniem kodu kreskowego",
+                                    Toast.LENGTH_LONG).show();
                         }
                         updateListView();
                     });
@@ -295,19 +283,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View v) {
-//Sprawdzanie czy został kliknięty przycisk
-        switch (v.getId()) {
-            case R.id.send_btn:
-                onSend();
-                break;
+        if (v.getId() == R.id.send_btn) {
+            onSend();
         }
     }
 
     private boolean counter(String barcode) {
         this.barcodeMap.merge(barcode, 1, Integer::sum);
-        if (this.barcodeMap.get(barcode) == 2) {
-            return true;
-        }
-        return false;
+        return this.barcodeMap.get(barcode) == 2;
     }
 }
