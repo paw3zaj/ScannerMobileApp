@@ -52,26 +52,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private SQLiteOpenHelper databaseHelper;
     private SimpleCursorAdapter listAdapter;
     private Button sendButton;
-
     private SurfaceView surfaceView;
     private BarcodeDetector barcodeDetector;
     private CameraSource cameraSource;
     private static final int REQUEST_CAMERA_PERMISSION = 201;
-
     private Map<String, Integer> barcodeMap;
-    private JSONArray jar;
-
     private ListView listView;
-
-    private Integer i = 0;
-    private TextView txtSize;
-    private TextView txtView;
-
-    //PRODUCTION IP
-    public static final String URL = "http://153.19.70.197:7323/receive-books-barcode";
-    //DEVELOPER IP
-//    public static final String URL = "http://153.19.70.138:8080/receive-books-barcode";
-
+    private static final String URL = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,21 +67,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
-//        barcodeMap = new ArrayList<>();
         barcodeMap = new HashMap<>();
         databaseHelper = new DatabaseHelper(this);
 
         sendButton = (Button) findViewById(R.id.send_btn);
         sendButton.setOnClickListener(this);
 
-        txtSize = (TextView) findViewById(R.id.size_txt);
-        txtView = (TextView) findViewById(R.id.counter_txt);
-
         listView = (ListView) findViewById(R.id.list_books);
         surfaceView = (SurfaceView) findViewById(R.id.barcode_sv);
 
         updateListView();
         scanBarcode();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        barcodeMap.clear();
     }
 
     @Override
@@ -105,23 +94,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void onSend() {
-
-        jar = new JSONArray();
-
+        JSONArray jar = new JSONArray();
         try {
-//                SQLiteDatabase db = databaseHelper.getReadableDatabase();
             cursor = db.query("BORROWED", new String[]{"BARCODE", "CREATED_DATE"}, null, null, null, null, null);
             if (cursor.moveToFirst()) {
                 disableButton();
                 do {
-                    //calling the method to save the barcodes to MySQL
-                    jar.put(new JSONObject(new HashMap<String, String>(){{
+                    jar.put(new JSONObject(new HashMap<String, String>() {{
                         put("barcode", cursor.getString(0));
                         put("createdDate", cursor.getString(1));
                     }}));
-
                 } while (cursor.moveToNext());
-
                 sendBarcode(jar);
             }
         } catch (SQLException e) {
@@ -155,7 +138,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     Toast.makeText(getApplicationContext(),
                             "Sieć wifi niedostępna",
                             Toast.LENGTH_LONG).show();
-                } else if(error instanceof TimeoutError) {
+                } else if (error instanceof TimeoutError) {
                     Toast.makeText(getApplicationContext(),
                             "Przekroczony czas oczekiwania na połączenie z siecią",
                             Toast.LENGTH_LONG).show();
@@ -186,9 +169,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 } else {
                     Toast.makeText(getApplicationContext(), error.toString(), Toast.LENGTH_LONG).show();
                 }
-
                 enableButton();
-
             }
         });
 
@@ -202,10 +183,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         MySingleton.getInstance(this).addToRequestQueue(req);
     }
 
-    public void updateListView() {
-
-        //Create a cursor
-//        SQLiteOpenHelper databaseHelper = new DatabaseHelper(this);
+    private void updateListView() {
         try {
             db = databaseHelper.getReadableDatabase();
             cursor = db.query("BORROWED",
@@ -218,8 +196,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     new int[]{android.R.id.text1},
                     0);
             listView.setAdapter(listAdapter);
-//            listAdapter.isEmpty();
-
         } catch (SQLiteException e) {
             Toast toast = Toast.makeText(this, "Baza danych SQLite niedostępna", Toast.LENGTH_SHORT);
             toast.show();
@@ -240,8 +216,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         surfaceView.getHolder().addCallback(new SurfaceHolder.Callback() {
             @Override
             public void surfaceCreated(SurfaceHolder holder) {
-                try{
-                    if(ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+                try {
+                    if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
                         cameraSource.start(surfaceView.getHolder());
                     } else {
                         ActivityCompat.requestPermissions(MainActivity.this, new
@@ -274,7 +250,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                 final SparseArray<Barcode> barcodes = detections.getDetectedItems();
 
-                if(barcodes.size() != 0) {
+                if (barcodes.size() != 0) {
 
                     listView.post(() -> {
 
@@ -282,13 +258,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         String barcode = thisCode.rawValue;
 
                         try {
-                            long l =  Long.parseLong(barcode);
-//                                if(barcode.length() == 12){
-                            txtView.setText(i.toString());
-                            txtSize.setText(size().toString());
-                        if(count(barcode) == 3) {
+                            long l = Long.parseLong(barcode);
+                                if(barcode.length() == 12){
+                            if (counter(barcode)) {
 
-//                                    barcodeMap.add(barcode);
                                 DatabaseHelper.insertBook(db, barcode, FormatDateTime.dateTime());
 
                                 Vibrator v = (Vibrator) getSystemService(getApplicationContext().VIBRATOR_SERVICE);
@@ -299,18 +272,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                     //deprecated in API 26
                                     v.vibrate(200);
                                 }
-
-
-
                             }
-
-
-//                            }
-                        } catch (NumberFormatException e) {}
-
+                            }
+                        } catch (NumberFormatException e) {
+                        }
                         updateListView();
-
-
                     });
                 }
             }
@@ -322,10 +288,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         sendButton.setBackgroundColor(Color.parseColor("#ff99cc00"));
     }
 
-    private void disableButton(){
+    private void disableButton() {
         sendButton.setEnabled(false);
         sendButton.setBackgroundColor(Color.LTGRAY);
     }
+
     @Override
     public void onClick(View v) {
 //Sprawdzanie czy został kliknięty przycisk
@@ -336,15 +303,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    private Integer count(String barcode) {
+    private boolean counter(String barcode) {
         this.barcodeMap.merge(barcode, 1, Integer::sum);
-        i=this.barcodeMap.get(barcode);
-
-        return i;
-    }
-
-    private Integer size(){
-        Integer s = this.barcodeMap.size();
-        return s;
+        if (this.barcodeMap.get(barcode) == 2) {
+            return true;
+        }
+        return false;
     }
 }
