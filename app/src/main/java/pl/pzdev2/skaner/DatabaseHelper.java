@@ -9,7 +9,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DB_NAME = "statistics";
     private static final int DB_VERSION = 1;
-    public static final String BARCODE = "barcode";
 
     public DatabaseHelper(Context context) {
         super(context, DB_NAME, null, DB_VERSION);
@@ -22,10 +21,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + "_id INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + "BARCODE TEXT, "
                 + "CREATED_DATE TEXT);");
-//        insertBook(db,"33333", FormatDateTime.dateTime());
-//        insertBook(db,"1111");
-//        insertBook(db,"22222");
-//        insertBook(db,"3333");
     }
 
     @Override
@@ -46,7 +41,4 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("delete from BORROWED");
     }
 
-    public void selectAll(SQLiteDatabase db) {
-        db.execSQL("select * from BORROWED");
-    }
 }

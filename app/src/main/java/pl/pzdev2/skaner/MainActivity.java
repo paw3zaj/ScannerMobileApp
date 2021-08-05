@@ -244,7 +244,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         String barcode = thisCode.rawValue;
 
                         try {
-//                            if (barcode.length() == 12) {
                                 if (counter(barcode)) {
 
                                     DatabaseHelper.insertBook(db, barcode, FormatDateTime.dateTime());
@@ -258,7 +257,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                         v.vibrate(200);
                                     }
                                 }
-//                            }
                         } catch (NumberFormatException e) {
                             Toast.makeText(getApplicationContext(),
                                     "Problem z zeskanowaniem kodu kreskowego",
